@@ -222,8 +222,7 @@ the next index of the new block (c) to point to the last free block.
 Note that the next free index of the pf block must point to the new lf
 because cf is no longer a free block!
 
-### Operation of malloc when we have found a block (cf) that will fit the
-current request of b units exactly.
+### Operation of malloc when we have found a block (cf) that will fit the current request of b units exactly
 
 This one is pretty easy, just clear the free list bit in the current
 block and unhook it from the free list.
@@ -253,8 +252,7 @@ nf |*?? | ?? | ?? | cf |           nf | ?? | ?? | ?? | pf |
 Unhooking from the free list is accomplished by adjusting the next and
 prev free list index values in the pf and nf blocks.
 
-### Operation of malloc when we have found a block that will fit the current
-request of b units with some left over.
+### Operation of malloc when we have found a block that will fit the current request of b units with some left over
 
 We'll allocate the new block at the END of the current free block so we
 don't have to change ANY free list pointers.
