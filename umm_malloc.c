@@ -493,47 +493,6 @@
 
 #include "umm_malloc_cfg.h"   /* user-dependent */
 
-/* ----------------------------------------------------------------------------
- *
- * There are a number of defines you can set at compile time that affect how
- * the memory allocator will operate. In GNU C, you set these compile time
- * defines like this:
- *
- * -D UMM_TEST_MAIN
- *
- * Set this if you want to compile in the test suite at the end of this file.
- * If you do set this variable, then the function names are left alone as
- * umm_malloc() umm_free() and umm_realloc() so that they cannot be confused
- * with the C runtime functions malloc() free() and realloc()
- *
- * If you leave this variable unset, then the function names become malloc()
- * free() and realloc() so that they can be used as the C runtime functions
- * in an embedded environment.
- *
- * -D UMM_BEST_FIT (defualt)
- *
- * Set this if you want to use a best-fit algorithm for allocating new
- * blocks
- *
- * -D UMM_FIRST_FIT
- *
- * Set this if you want to use a first-fit algorithm for allocating new
- * blocks
- *
- * -D UMM_DBG_LOG_LEVEL=n
- *
- * Set n to a value from 0 to 6 depending on how verbose you want the debug
- * log to be
- *
- * ----------------------------------------------------------------------------
- * 
- * Support for this library in a multitasking environment is provided when
- * you add bodies to the UMM_CRITICAL_ENTRY and UMM_CRITICAL_EXIT macros
- * in umm_malloc.h
- *
- * ----------------------------------------------------------------------------
- */
-
 #ifndef UMM_FIRST_FIT
 #  ifndef UMM_BEST_FIT
 #    define UMM_BEST_FIT
