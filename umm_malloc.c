@@ -633,11 +633,11 @@ const unsigned short int umm_numblocks = sizeof(umm_heap)/sizeof(umm_block);
  * the current block number.
  *
  * The umm_info function does all of that and makes the results available
- * in the heapInfo structure.
+ * in the ummHeapInfo structure.
  * ----------------------------------------------------------------------------
  */
 
-UMM_HEAP_INFO heapInfo;
+UMM_HEAP_INFO ummHeapInfo;
 
 void *umm_info( void *ptr, int force ) {
 
@@ -647,10 +647,10 @@ void *umm_info( void *ptr, int force ) {
   UMM_CRITICAL_ENTRY();
 
   /*
-   * Clear out all of the entries in the heapInfo structure before doing
+   * Clear out all of the entries in the ummHeapInfo structure before doing
    * any calculations..
    */
-  memset( &heapInfo, 0, sizeof( heapInfo ) );
+  memset( &ummHeapInfo, 0, sizeof( ummHeapInfo ) );
 
   DBG_LOG_FORCE( force, "\n\nDumping the umm_heap...\n" );
 
@@ -672,14 +672,14 @@ void *umm_info( void *ptr, int force ) {
   blockNo = UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK;
 
   while( UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK ) {
-    ++heapInfo.totalEntries;
-    heapInfo.totalBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
+    ++ummHeapInfo.totalEntries;
+    ummHeapInfo.totalBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
 
     /* Is this a free block? */
 
     if( UMM_NBLOCK(blockNo) & UMM_FREELIST_MASK ) {
-      ++heapInfo.freeEntries;
-      heapInfo.freeBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
+      ++ummHeapInfo.freeEntries;
+      ummHeapInfo.freeBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
 
       DBG_LOG_FORCE( force, "|0x%08x|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
           (unsigned int)(&UMM_BLOCK(blockNo)),
@@ -700,8 +700,8 @@ void *umm_info( void *ptr, int force ) {
         return( ptr );
       }
     } else {
-      ++heapInfo.usedEntries;
-      heapInfo.usedBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
+      ++ummHeapInfo.usedEntries;
+      ummHeapInfo.usedBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
 
       DBG_LOG_FORCE( force, "|0x%08x|B %5i|NB %5i|PB %5i|Z %5i|\n",
           (unsigned int)(&UMM_BLOCK(blockNo)),
@@ -719,8 +719,8 @@ void *umm_info( void *ptr, int force ) {
    * rest must be free!
    */
 
-  heapInfo.freeBlocks  += UMM_NUMBLOCKS-blockNo;
-  heapInfo.totalBlocks += UMM_NUMBLOCKS-blockNo;
+  ummHeapInfo.freeBlocks  += UMM_NUMBLOCKS-blockNo;
+  ummHeapInfo.totalBlocks += UMM_NUMBLOCKS-blockNo;
 
   DBG_LOG_FORCE( force, "|0x%08x|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
       (unsigned int)(&UMM_BLOCK(blockNo)),
@@ -732,14 +732,14 @@ void *umm_info( void *ptr, int force ) {
       UMM_PFREE(blockNo) );
 
   DBG_LOG_FORCE( force, "Total Entries %5i    Used Entries %5i    Free Entries %5i\n",
-      heapInfo.totalEntries,
-      heapInfo.usedEntries,
-      heapInfo.freeEntries );
+      ummHeapInfo.totalEntries,
+      ummHeapInfo.usedEntries,
+      ummHeapInfo.freeEntries );
 
   DBG_LOG_FORCE( force, "Total Blocks  %5i    Used Blocks  %5i    Free Blocks  %5i\n",
-      heapInfo.totalBlocks,
-      heapInfo.usedBlocks,
-      heapInfo.freeBlocks  );
+      ummHeapInfo.totalBlocks,
+      ummHeapInfo.usedBlocks,
+      ummHeapInfo.freeBlocks  );
 
   /* Release the critical section... */
   UMM_CRITICAL_EXIT();

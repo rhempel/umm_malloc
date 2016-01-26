@@ -41,7 +41,7 @@ typedef struct UMM_HEAP_INFO_t {
   }
   UMM_HEAP_INFO;
   
-extern UMM_HEAP_INFO heapInfo;
+extern UMM_HEAP_INFO ummHeapInfo;
 
 extern char   __umm_heap_start[];
 extern char   __umm_heap_end[];
