@@ -692,21 +692,27 @@ void *umm_info( void *ptr, int force ) {
   blockNo = UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK;
 
   while( UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK ) {
+    size_t curBlocks = (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
+
     ++ummHeapInfo.totalEntries;
-    ummHeapInfo.totalBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
+    ummHeapInfo.totalBlocks += curBlocks;
 
     /* Is this a free block? */
 
     if( UMM_NBLOCK(blockNo) & UMM_FREELIST_MASK ) {
       ++ummHeapInfo.freeEntries;
-      ummHeapInfo.freeBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
+      ummHeapInfo.freeBlocks += curBlocks;
+
+      if (ummHeapInfo.maxFreeContiguousBlocks < curBlocks) {
+        ummHeapInfo.maxFreeContiguousBlocks = curBlocks;
+      }
 
       DBG_LOG_FORCE( force, "|0x%08x|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
           (unsigned int)(&UMM_BLOCK(blockNo)),
           blockNo,
           UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK,
           UMM_PBLOCK(blockNo),
-          (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo,
+          curBlocks,
           UMM_NFREE(blockNo),
           UMM_PFREE(blockNo) );
 
@@ -721,14 +727,14 @@ void *umm_info( void *ptr, int force ) {
       }
     } else {
       ++ummHeapInfo.usedEntries;
-      ummHeapInfo.usedBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
+      ummHeapInfo.usedBlocks += curBlocks;
 
       DBG_LOG_FORCE( force, "|0x%08x|B %5i|NB %5i|PB %5i|Z %5i|\n",
           (unsigned int)(&UMM_BLOCK(blockNo)),
           blockNo,
           UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK,
           UMM_PBLOCK(blockNo),
-          (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo );
+          curBlocks );
     }
 
     blockNo = UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK;
@@ -739,8 +745,15 @@ void *umm_info( void *ptr, int force ) {
    * rest must be free!
    */
 
-  ummHeapInfo.freeBlocks  += UMM_NUMBLOCKS-blockNo;
-  ummHeapInfo.totalBlocks += UMM_NUMBLOCKS-blockNo;
+  {
+    size_t curBlocks = UMM_NUMBLOCKS-blockNo;
+    ummHeapInfo.freeBlocks  += curBlocks;
+    ummHeapInfo.totalBlocks += curBlocks;
+
+    if (ummHeapInfo.maxFreeContiguousBlocks < curBlocks) {
+      ummHeapInfo.maxFreeContiguousBlocks = curBlocks;
+    }
+  }
 
   DBG_LOG_FORCE( force, "|0x%08x|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
       (unsigned int)(&UMM_BLOCK(blockNo)),
