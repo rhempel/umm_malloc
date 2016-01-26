@@ -33,14 +33,14 @@
 typedef struct UMM_HEAP_INFO_t {
   unsigned short int totalEntries;
   unsigned short int usedEntries;
-  unsigned short int freeEntries; 
+  unsigned short int freeEntries;
 
-  unsigned short int totalBlocks; 
-  unsigned short int usedBlocks; 
-  unsigned short int freeBlocks; 
+  unsigned short int totalBlocks;
+  unsigned short int usedBlocks;
+  unsigned short int freeBlocks;
   }
   UMM_HEAP_INFO;
-  
+
 extern UMM_HEAP_INFO ummHeapInfo;
 
 extern char   __umm_heap_start[];
@@ -48,6 +48,11 @@ extern char   __umm_heap_end[];
 extern size_t __umm_heap_size;
 
 void *umm_info( void *ptr, int force );
+
+void *umm_malloc( size_t size );
+void *umm_calloc( size_t num, size_t size );
+void *umm_realloc( void *ptr, size_t size );
+void umm_free( void *ptr );
 
 /* ------------------------------------------------------------------------- */
 

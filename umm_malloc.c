@@ -1230,6 +1230,16 @@ void *umm_realloc( void *ptr, size_t size ) {
   return( ptr );
 }
 
+/* ------------------------------------------------------------------------ */
+
+void * umm_calloc( size_t num, size_t size ) {
+  size_t s = size * num;
+  void *ret = umm_malloc(s);
+
+  memset(ret, 0x00, s);
+  return ret;
+}
+
 /* ------------------------------------------------------------------------- */
 
 #ifdef UMM_TEST_MAIN
