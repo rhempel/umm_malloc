@@ -862,15 +862,25 @@ static unsigned short int umm_blocks( size_t size ) {
 
 /* ------------------------------------------------------------------------ */
 
+/*
+ * Split the block `c` into two blocks: `c` and `c + blocks`.
+ *
+ * - `cur_freemask` should be `0` if `c` used, or `UMM_FREELIST_MASK`
+ *   otherwise.
+ * - `new_freemask` should be `0` if `c + blocks` used, or `UMM_FREELIST_MASK`
+ *   otherwise.
+ *
+ * Note that free pointers are NOT modified by this function.
+ */
 static void umm_make_new_block( unsigned short int c,
     unsigned short int blocks,
-    unsigned short int freemask ) {
+    unsigned short int cur_freemask, unsigned short int new_freemask ) {
 
-  UMM_NBLOCK(c+blocks) = UMM_NBLOCK(c) & UMM_BLOCKNO_MASK;
+  UMM_NBLOCK(c+blocks) = (UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) | new_freemask;
   UMM_PBLOCK(c+blocks) = c;
 
   UMM_PBLOCK(UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) = (c+blocks);
-  UMM_NBLOCK(c)                                = (c+blocks) | freemask;
+  UMM_NBLOCK(c)                                = (c+blocks) | cur_freemask;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1096,9 +1106,28 @@ void *umm_malloc( size_t size ) {
       /* It's not an exact fit and we need to split off a block. */
       DBG_LOG_DEBUG( "Allocating %6i blocks starting at %6i - existing\n", blocks, cf );
 
-      umm_make_new_block( cf, blockSize-blocks, UMM_FREELIST_MASK );
+      /*
+       * split current free block `cf` into two blocks. The first one will be
+       * returned to user, so it's not free, and the second one will be free.
+       */
+      umm_make_new_block( cf, blocks,
+          0/*`cf` is not free*/,
+          UMM_FREELIST_MASK/*new block is free*/);
 
-      cf += blockSize-blocks;
+      /*
+       * `umm_make_new_block()` does not update the free pointers (it affects
+       * only free flags), but effectively we've just moved beginning of the
+       * free block from `cf` to `cf + blocks`. So we have to adjust pointers
+       * to and from adjacent free blocks.
+       */
+
+      /* previous free block */
+      UMM_NFREE( UMM_PFREE(cf) ) = cf + blocks;
+      UMM_PFREE( cf + blocks ) = UMM_PFREE(cf);
+
+      /* next free block */
+      UMM_PFREE( UMM_NFREE(cf) ) = cf + blocks;
+      UMM_NFREE( cf + blocks ) = UMM_NFREE(cf);
     }
   } else {
     /* Out of memory */
@@ -1267,8 +1296,7 @@ void *umm_realloc( void *ptr, size_t size ) {
 
     DBG_LOG_DEBUG( "realloc %i to a smaller block %i, shrink and free the leftover bits\n", blockSize, blocks );
 
-    umm_make_new_block( c, blocks, 0 );
-
+    umm_make_new_block( c, blocks, 0, 0 );
     umm_free( (void *)&UMM_DATA(c+blocks) );
   } else {
     /* New block is bigger than the old block... */
