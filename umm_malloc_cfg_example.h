@@ -73,4 +73,55 @@
 #define UMM_CRITICAL_ENTRY()
 #define UMM_CRITICAL_EXIT()
 
+/*
+ * -D UMM_INTEGRITY_CHECK :
+ *
+ * Enables heap integrity check before any heap operation. It affects
+ * performance, but does NOT consume extra memory.
+ *
+ * If integrity violation is detected, the message is printed and user-provided
+ * callback is called: `UMM_HEAP_CORRUPTION_CB()`
+ *
+ * Note that not all buffer overruns are detected: each buffer is aligned by
+ * 4 bytes, so there might be some trailing "extra" bytes which are not checked
+ * for corruption.
+ */
+/*
+#define UMM_INTEGRITY_CHECK
+*/
+
+/*
+ * -D UMM_POISON :
+ *
+ * Enables heap poisoning: add predefined value (poison) before and after each
+ * allocation, and check before each heap operation that no poison is
+ * corrupted.
+ *
+ * Other than the poison itself, we need to store exact user-requested length
+ * for each buffer, so that overrun by just 1 byte will be always noticed.
+ *
+ * Customizations:
+ *
+ *    UMM_POISON_SIZE_BEFORE:
+ *      Number of poison bytes before each block, e.g. 2
+ *    UMM_POISON_SIZE_AFTER:
+ *      Number of poison bytes after each block e.g. 2
+ *    UMM_POISONED_BLOCK_LEN_TYPE
+ *      Type of the exact buffer length, e.g. `short`
+ *
+ * NOTE: each allocated buffer is aligned by 4 bytes. But when poisoning is
+ * enabled, actual pointer returned to user is shifted by
+ * `(sizeof(UMM_POISONED_BLOCK_LEN_TYPE) + UMM_POISON_SIZE_BEFORE)`.
+ * It's your responsibility to make resulting pointers aligned appropriately.
+ *
+ * If poison corruption is detected, the message is printed and user-provided
+ * callback is called: `UMM_HEAP_CORRUPTION_CB()`
+ */
+/*
+#define UMM_POISON
+*/
+#define UMM_POISON_SIZE_BEFORE 2
+#define UMM_POISON_SIZE_AFTER 2
+#define UMM_POISONED_BLOCK_LEN_TYPE short
+
 #endif /* _UMM_MALLOC_CFG_H */
