@@ -486,12 +486,12 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <stddef.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "umm_malloc.h"
+
+#include "umm_malloc_cfg.h"   /* user-dependent */
 
 /* ----------------------------------------------------------------------------
  *
