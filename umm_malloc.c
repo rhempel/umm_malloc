@@ -1289,6 +1289,11 @@ void * umm_calloc( size_t num, size_t size ) {
   return ret;
 }
 
+size_t umm_free_heap_size( void ) {
+  umm_info(NULL, 0);
+  return (size_t)ummHeapInfo.freeBlocks * sizeof(umm_block);
+}
+
 /* ------------------------------------------------------------------------- */
 
 #ifdef UMM_TEST_MAIN
