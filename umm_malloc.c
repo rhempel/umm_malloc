@@ -782,9 +782,56 @@ void *umm_info( void *ptr, int force ) {
 /* ------------------------------------------------------------------------- */
 
 static void umm_init( void ) {
+  /* init heap pointer and size, and memset it to 0 */
   umm_heap = (umm_block *)UMM_MALLOC_CFG__HEAP_ADDR;
   umm_numblocks = (UMM_MALLOC_CFG__HEAP_SIZE / sizeof(umm_block));
   memset(umm_heap, 0x00, UMM_MALLOC_CFG__HEAP_SIZE);
+
+  /* setup initial blank heap structure */
+  {
+    /* index of the 0th `umm_block` */
+    const unsigned short int block_0th = 0;
+    /* index of the 1st `umm_block` */
+    const unsigned short int block_1th = 1;
+    /* index of the latest `umm_block` */
+    const unsigned short int block_last = UMM_NUMBLOCKS - 1;
+
+    /* setup the 0th `umm_block`, which just points to the 1st */
+    UMM_NBLOCK(block_0th) = block_1th;
+    UMM_NFREE(block_0th)  = block_1th;
+
+    /*
+     * Now, we need to set the whole heap space as a huge free block. We should
+     * not touch the 0th `umm_block`, since it's special: the 0th `umm_block`
+     * is the head of the free block list. It'a a part of the heap invariant.
+     *
+     * See the detailed explanation at the beginning of the file.
+     */
+
+    /*
+     * 1th `umm_block` has pointers:
+     *
+     * - next `umm_block`: the latest one
+     * - prev `umm_block`: the 0th
+     *
+     * Plus, it's a free `umm_block`, so we need to apply `UMM_FREELIST_MASK`
+     */
+    UMM_NBLOCK(block_1th) = block_last | UMM_FREELIST_MASK;
+    UMM_NFREE(block_1th)  = block_last;
+    UMM_PBLOCK(block_1th) = block_0th;
+    UMM_PFREE(block_1th)  = block_0th;
+
+    /*
+     * latest `umm_block` has pointers:
+     *
+     * - next `umm_block`: 0 (meaning, there are no more `umm_blocks`)
+     * - prev `umm_block`: the 1st
+     */
+    UMM_NBLOCK(block_last) = 0;
+    UMM_NFREE(block_last)  = 0;
+    UMM_PBLOCK(block_last) = block_1th;
+    UMM_PFREE(block_last)  = block_1th;
+  }
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1005,7 +1052,7 @@ void *umm_malloc( size_t size ) {
   bestBlock = UMM_NFREE(0);
   bestSize  = 0x7FFF;
 
-  while( UMM_NFREE(cf) ) {
+  while( cf ) {
     blockSize = (UMM_NBLOCK(cf) & UMM_BLOCKNO_MASK) - cf;
 
     DBG_LOG_TRACE( "Looking at block %6i size %6i\n", cf, blockSize );
@@ -1029,7 +1076,7 @@ void *umm_malloc( size_t size ) {
     blockSize = bestSize;
   }
 
-  if( UMM_NBLOCK(cf) & UMM_BLOCKNO_MASK ) {
+  if( UMM_NBLOCK(cf) & UMM_BLOCKNO_MASK && blockSize >= blocks ) {
     /*
      * This is an existing block in the memory heap, we just need to split off
      * what we need, unlink it from the free list and mark it as in use, and
@@ -1054,43 +1101,14 @@ void *umm_malloc( size_t size ) {
       cf += blockSize-blocks;
     }
   } else {
-    /*
-     * We're at the end of the heap - allocate a new block, but check to see if
-     * there's enough memory left for the requested block! Actually, we may need
-     * one more than that if we're initializing the umm_heap for the first
-     * time, which happens in the next conditional...
-     */
+    /* Out of memory */
 
-    if( UMM_NUMBLOCKS <= cf+blocks+1 ) {
-      DBG_LOG_DEBUG(  "Can't allocate %5i blocks at %5i\n", blocks, cf );
+    DBG_LOG_DEBUG(  "Can't allocate %5i blocks\n", blocks );
 
-       /* Release the critical section... */
-      UMM_CRITICAL_EXIT();
+    /* Release the critical section... */
+    UMM_CRITICAL_EXIT();
 
-      return( (void *)NULL );
-    }
-
-    /*
-     * Now check to see if we need to initialize the free list...this assumes
-     * that the BSS is set to 0 on startup. We should rarely get to the end of
-     * the free list so this is the "cheapest" place to put the initialization!
-     */
-
-    if( 0 == cf ) {
-      DBG_LOG_DEBUG( "Initializing malloc free block pointer\n" );
-      UMM_NBLOCK(0) = 1;
-      UMM_NFREE(0)  = 1;
-      cf            = 1;
-    }
-
-    DBG_LOG_DEBUG( "Allocating %6i blocks starting at %6i - new     \n", blocks, cf );
-
-    UMM_NFREE(UMM_PFREE(cf)) = cf+blocks;
-
-    memcpy( &UMM_BLOCK(cf+blocks), &UMM_BLOCK(cf), sizeof(umm_block) );
-
-    UMM_NBLOCK(cf)           = cf+blocks;
-    UMM_PBLOCK(cf+blocks)    = cf;
+    return( (void *)NULL );
   }
 
   /* Release the critical section... */
