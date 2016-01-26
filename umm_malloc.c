@@ -575,36 +575,20 @@ UMM_H_ATTPACKPRE typedef struct umm_block_t {
 
 #ifndef UMM_TEST_MAIN
 
-#define umm_free    free
-#define umm_malloc  malloc
-#define umm_realloc realloc
+#ifdef UMM_REDEFINE_MEM_FUNCTIONS
+#  define umm_free    free
+#  define umm_malloc  malloc
+#  define umm_realloc realloc
+#endif
 
-extern umm_block umm_heap[];
-
-/*
- * Note that _UMM_NUMBLOCKS is a value that is computed at link time, and
- * it represents the number of blocks available for the memory manager.
- */
-
-extern unsigned short int _UMM_NUMBLOCKS;
-
-/*
- * Link time calculations assign values to symbols, but you can't take
- * the value of something filled in at link time, you can only get its
- * address.
- *
- * That's why we take the address of _UMM_NUMBLOCKS and assign it to
- * the constant value umm_numblocks.
- */
-
-const unsigned int umm_numblocks = (unsigned int)(&_UMM_NUMBLOCKS);
+umm_block *umm_heap = NULL;
+unsigned short int umm_numblocks = 0;
 
 #define UMM_NUMBLOCKS (umm_numblocks)
 
 #else
 
-umm_block umm_heap[2600];
-
+umm_block umm_heap[8192];
 const unsigned short int umm_numblocks = sizeof(umm_heap)/sizeof(umm_block);
 
 #define UMM_NUMBLOCKS (umm_numblocks)
@@ -745,6 +729,14 @@ void *umm_info( void *ptr, int force ) {
   UMM_CRITICAL_EXIT();
 
   return( NULL );
+}
+
+/* ------------------------------------------------------------------------- */
+
+static void umm_init( void ) {
+  umm_heap = (umm_block *)UMM_MALLOC_CFG__HEAP_ADDR;
+  umm_numblocks = (UMM_MALLOC_CFG__HEAP_SIZE / sizeof(umm_block));
+  memset(umm_heap, 0x00, UMM_MALLOC_CFG__HEAP_SIZE);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -931,6 +923,10 @@ void *umm_malloc( size_t size ) {
 
            unsigned short int cf;
 
+  if (umm_heap == NULL) {
+    umm_init();
+  }
+
   /*
    * the very first thing we do is figure out if we're being asked to allocate
    * a size of 0 - and if we are we'll simply return a null pointer. if not
@@ -1066,6 +1062,10 @@ void *umm_realloc( void *ptr, size_t size ) {
   unsigned short int c;
 
   size_t curSize;
+
+  if (umm_heap == NULL) {
+    umm_init();
+  }
 
   /*
    * This code looks after the case of a NULL value for ptr. The ANSI C
