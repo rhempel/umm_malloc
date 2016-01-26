@@ -499,12 +499,12 @@
 #  endif
 #endif
 
-#ifndef UMM_DBG_LOG_LEVEL
+#ifndef DBG_LOG_LEVEL
 #  undef  DBG_LOG_LEVEL
 #  define DBG_LOG_LEVEL 0
 #else
 #  undef  DBG_LOG_LEVEL
-#  define DBG_LOG_LEVEL UMM_DBG_LOG_LEVEL
+#  define DBG_LOG_LEVEL DBG_LOG_LEVEL
 #endif
 
 /* -- dbglog {{{ */
@@ -631,7 +631,7 @@ const unsigned short int umm_numblocks = sizeof(umm_heap)/sizeof(umm_block);
 
 #endif
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------ */
 
 #define UMM_BLOCK(b)  (umm_heap[b])
 
@@ -641,8 +641,7 @@ const unsigned short int umm_numblocks = sizeof(umm_heap)/sizeof(umm_block);
 #define UMM_PFREE(b)  (UMM_BLOCK(b).body.free.prev)
 #define UMM_DATA(b)   (UMM_BLOCK(b).body.data)
 
-/*
- * ----------------------------------------------------------------------------
+/* ----------------------------------------------------------------------------
  * One of the coolest things about this little library is that it's VERY
  * easy to get debug information about the memory heap by simply iterating
  * through all of the memory blocks.
@@ -788,7 +787,7 @@ static void umm_init( void ) {
   memset(umm_heap, 0x00, UMM_MALLOC_CFG__HEAP_SIZE);
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------ */
 
 static unsigned short int umm_blocks( size_t size ) {
 
@@ -814,33 +813,33 @@ static unsigned short int umm_blocks( size_t size ) {
   return( 2 + size/(sizeof(umm_block)) );
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------ */
 
 static void umm_make_new_block( unsigned short int c,
-                                unsigned short int blocks,
-                                unsigned short int freemask ) {
+    unsigned short int blocks,
+    unsigned short int freemask ) {
 
-     UMM_NBLOCK(c+blocks) = UMM_NBLOCK(c) & UMM_BLOCKNO_MASK;
-     UMM_PBLOCK(c+blocks) = c;
+  UMM_NBLOCK(c+blocks) = UMM_NBLOCK(c) & UMM_BLOCKNO_MASK;
+  UMM_PBLOCK(c+blocks) = c;
 
-     UMM_PBLOCK(UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) = (c+blocks);
-     UMM_NBLOCK(c)                                = (c+blocks) | freemask;
+  UMM_PBLOCK(UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) = (c+blocks);
+  UMM_NBLOCK(c)                                = (c+blocks) | freemask;
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------ */
 
 static void umm_disconnect_from_free_list( unsigned short int c ) {
-    /* Disconnect this block from the FREE list */
+  /* Disconnect this block from the FREE list */
 
-    UMM_NFREE(UMM_PFREE(c)) = UMM_NFREE(c);
-    UMM_PFREE(UMM_NFREE(c)) = UMM_PFREE(c);
+  UMM_NFREE(UMM_PFREE(c)) = UMM_NFREE(c);
+  UMM_PFREE(UMM_NFREE(c)) = UMM_PFREE(c);
 
-    /* And clear the free block indicator */
+  /* And clear the free block indicator */
 
-    UMM_NBLOCK(c) &= (~UMM_FREELIST_MASK);
+  UMM_NBLOCK(c) &= (~UMM_FREELIST_MASK);
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------ */
 
 static void umm_assimilate_up( unsigned short int c ) {
 
@@ -863,17 +862,17 @@ static void umm_assimilate_up( unsigned short int c ) {
   } 
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------ */
 
 static unsigned short int umm_assimilate_down( unsigned short int c, unsigned short int freemask ) {
 
-    UMM_NBLOCK(UMM_PBLOCK(c)) = UMM_NBLOCK(c) | freemask;
-    UMM_PBLOCK(UMM_NBLOCK(c)) = UMM_PBLOCK(c);
+  UMM_NBLOCK(UMM_PBLOCK(c)) = UMM_NBLOCK(c) | freemask;
+  UMM_PBLOCK(UMM_NBLOCK(c)) = UMM_PBLOCK(c);
 
-    return( UMM_PBLOCK(c) );
+  return( UMM_PBLOCK(c) );
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------ */
 
 void umm_free( void *ptr ) {
 
@@ -884,7 +883,7 @@ void umm_free( void *ptr ) {
   if( (void *)0 == ptr ) {
     DBG_LOG_DEBUG( "free a null pointer -> do nothing\n" );
 
-  return;
+    return;
   }
 
   /*
@@ -897,12 +896,11 @@ void umm_free( void *ptr ) {
    */
 
   /* Protect the critical section... */
-
   UMM_CRITICAL_ENTRY();
 
   /* Figure out which block we're in. Note the use of truncated division... */
 
-  c = (ptr-(void *)(&(umm_heap[0])))/sizeof(umm_block);
+  c = (((char *)ptr)-(char *)(&(umm_heap[0])))/sizeof(umm_block);
 
   DBG_LOG_DEBUG( "Freeing block %6i\n", c );
 
@@ -933,7 +931,7 @@ void umm_free( void *ptr ) {
     UMM_NBLOCK(c)          |= UMM_FREELIST_MASK;
   }
 
-#if(0)
+#if 0
   /*
    * The following is experimental code that checks to see if the block we just 
    * freed can be assimilated with the very last block - it's pretty convoluted in
@@ -944,7 +942,7 @@ void umm_free( void *ptr ) {
 
   if( 0 == UMM_NBLOCK(UMM_NBLOCK(c) & UMM_BLOCKNO_MASK ) ) {
 
-   if( UMM_PBLOCK(UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) != UMM_PFREE(UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) ) {
+    if( UMM_PBLOCK(UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) != UMM_PFREE(UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) ) {
       UMM_NFREE(UMM_PFREE(UMM_NBLOCK(c) & UMM_BLOCKNO_MASK)) = c;
       UMM_NFREE(UMM_PFREE(c))                                = UMM_NFREE(c);
       UMM_PFREE(UMM_NFREE(c))                                = UMM_PFREE(c);
@@ -960,17 +958,17 @@ void umm_free( void *ptr ) {
   UMM_CRITICAL_EXIT();
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------ */
 
 void *umm_malloc( size_t size ) {
 
-           unsigned short int blocks;
-  volatile unsigned short int blockSize;
+  unsigned short int blocks;
+  unsigned short int blockSize = 0;
 
-           unsigned short int bestSize;
-           unsigned short int bestBlock;
+  unsigned short int bestSize;
+  unsigned short int bestBlock;
 
-           unsigned short int cf;
+  unsigned short int cf;
 
   if (umm_heap == NULL) {
     umm_init();
@@ -985,7 +983,7 @@ void *umm_malloc( size_t size ) {
 
   if( 0 == size ) {
     DBG_LOG_DEBUG( "malloc a block of 0 bytes -> do nothing\n" );
-  
+
     return( (void *)NULL );
   }
 
@@ -1015,7 +1013,7 @@ void *umm_malloc( size_t size ) {
 #if defined UMM_FIRST_FIT
     /* This is the first block that fits! */
     if( (blockSize >= blocks) )
-        break;
+      break;
 #elif defined UMM_BEST_FIT
     if( (blockSize >= blocks) && (blockSize < bestSize) ) {
       bestBlock = cf;
@@ -1048,13 +1046,13 @@ void *umm_malloc( size_t size ) {
       umm_disconnect_from_free_list( cf );
 
     } else {
-     /* It's not an exact fit and we need to split off a block. */
-     DBG_LOG_DEBUG( "Allocating %6i blocks starting at %6i - existing\n", blocks, cf );
+      /* It's not an exact fit and we need to split off a block. */
+      DBG_LOG_DEBUG( "Allocating %6i blocks starting at %6i - existing\n", blocks, cf );
 
-     umm_make_new_block( cf, blockSize-blocks, UMM_FREELIST_MASK );
+      umm_make_new_block( cf, blockSize-blocks, UMM_FREELIST_MASK );
 
-     cf += blockSize-blocks;
-     }
+      cf += blockSize-blocks;
+    }
   } else {
     /*
      * We're at the end of the heap - allocate a new block, but check to see if
@@ -1066,7 +1064,7 @@ void *umm_malloc( size_t size ) {
     if( UMM_NUMBLOCKS <= cf+blocks+1 ) {
       DBG_LOG_DEBUG(  "Can't allocate %5i blocks at %5i\n", blocks, cf );
 
-      /* Release the critical section... */
+       /* Release the critical section... */
       UMM_CRITICAL_EXIT();
 
       return( (void *)NULL );
@@ -1101,7 +1099,7 @@ void *umm_malloc( size_t size ) {
   return( (void *)&UMM_DATA(cf) );
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------ */
 
 void *umm_realloc( void *ptr, size_t size ) {
 
@@ -1160,7 +1158,7 @@ void *umm_realloc( void *ptr, size_t size ) {
 
   /* Figure out which block we're in. Note the use of truncated division... */
 
-  c = (ptr-(void *)(&(umm_heap[0])))/sizeof(umm_block);
+  c = (((char *)ptr)-(char *)(&(umm_heap[0])))/sizeof(umm_block);
 
   /* Figure out how big this block is... */
 
@@ -1294,7 +1292,7 @@ size_t umm_free_heap_size( void ) {
   return (size_t)ummHeapInfo.freeBlocks * sizeof(umm_block);
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------ */
 
 #ifdef UMM_TEST_MAIN
 
