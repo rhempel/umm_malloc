@@ -51,14 +51,52 @@
  * ----------------------------------------------------------------------------
  */
 
+
 /* Start addresses and the size of the heap */
-#define UMM_MALLOC_CFG__HEAP_ADDR   /* TODO */
-#define UMM_MALLOC_CFG__HEAP_SIZE   /* TODO */
+#define UMM_MALLOC_CFG_HEAP_ADDR   /* TODO */
+#define UMM_MALLOC_CFG_HEAP_SIZE   /* TODO */
 
 /* A couple of macros to make packing structures less compiler dependent */
 
 #define UMM_H_ATTPACKPRE
 #define UMM_H_ATTPACKSUF __attribute__((__packed__))
+
+#define UMM_BEST_FIT
+#undef  UMM_FIRST_FIT
+
+/*
+ * -D UMM_INFO :
+ *
+ * Enables a dup of the heap contents and a function to return the total
+ * heap size that is unallocated - note this is not the same as the largest
+ * unallocated block on the heap!
+ */
+
+/*
+#define UMM_INFO
+*/
+
+#ifdef UMM_INFO
+  typedef struct UMM_HEAP_INFO_t {
+    unsigned short int totalEntries;
+    unsigned short int usedEntries;
+    unsigned short int freeEntries;
+
+    unsigned short int totalBlocks;
+    unsigned short int usedBlocks;
+    unsigned short int freeBlocks;
+
+    unsigned short int maxFreeContiguousBlocks;
+  }
+  UMM_HEAP_INFO;
+
+  extern UMM_HEAP_INFO ummHeapInfo;
+
+  void *umm_info( void *ptr, int force );
+  size_t umm_free_heap_size( void );
+
+#else
+#endif
 
 /*
  * A couple of macros to make it easier to protect the memory allocator
@@ -86,9 +124,19 @@
  * 4 bytes, so there might be some trailing "extra" bytes which are not checked
  * for corruption.
  */
+
 /*
 #define UMM_INTEGRITY_CHECK
 */
+
+#ifdef UMM_INTEGRITY_CHECK
+   int umm_integrity_check( void );
+#  define INTEGRITY_CHECK() umm_integrity_check()
+   extern void umm_corruption(void);
+#  define UMM_HEAP_CORRUPTION_CB() printf( "Heap Corruption!" )
+#else
+#  define INTEGRITY_CHECK() 0
+#endif
 
 /*
  * -D UMM_POISON :
@@ -117,11 +165,24 @@
  * If poison corruption is detected, the message is printed and user-provided
  * callback is called: `UMM_HEAP_CORRUPTION_CB()`
  */
+
 /*
-#define UMM_POISON
+#define UMM_POISON_CHECK
 */
-#define UMM_POISON_SIZE_BEFORE 2
-#define UMM_POISON_SIZE_AFTER 2
+
+#define UMM_POISON_SIZE_BEFORE 4
+#define UMM_POISON_SIZE_AFTER 4
 #define UMM_POISONED_BLOCK_LEN_TYPE short
+
+#ifdef UMM_POISON_CHECK
+   void *umm_poison_malloc( size_t size );
+   void *umm_poison_calloc( size_t num, size_t size );
+   void *umm_poison_realloc( void *ptr, size_t size );
+   void  umm_poison_free( void *ptr );
+   int   umm_poison_check( void );
+#  define POISON_CHECK() umm_poison_check()
+#else
+#  define POISON_CHECK() 0
+#endif
 
 #endif /* _UMM_MALLOC_CFG_H */
