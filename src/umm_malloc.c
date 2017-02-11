@@ -425,6 +425,10 @@ void *umm_malloc( size_t size ) {
     /* Release the critical section... */
     UMM_CRITICAL_EXIT();
 
+	/* No free space. Notify application if callback is configured*/
+#if UMM_NOHEAP_CALLBACK_ENABLE
+	UMM_NOHEAP_CALLBACK_FUNC(size);
+#endif
     return( (void *)NULL );
   }
 

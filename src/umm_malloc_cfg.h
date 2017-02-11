@@ -56,6 +56,10 @@ extern char test_umm_heap[];
 /* Start addresses and the size of the heap */
 #define UMM_MALLOC_CFG_HEAP_ADDR (test_umm_heap)
 #define UMM_MALLOC_CFG_HEAP_SIZE 0x10000
+/* Call external function of signature void callback(size_t) 
+   when no space available to malloc */
+#define UMM_NOHEAP_CALLBACK_ENABLE 0
+#define UMM_NOHEAP_CALLBACK_FUNC 
 
 /* A couple of macros to make packing structures less compiler dependent */
 
