@@ -600,9 +600,9 @@ void *umm_realloc( void *ptr, size_t size ) {
 
     if( (ptr = umm_malloc( size )) ) {
       memcpy( ptr, oldptr, curSize );
+      umm_free( oldptr );
     }
 
-    umm_free( oldptr );
   }
 
   /* Release the critical section... */
