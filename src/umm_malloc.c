@@ -22,6 +22,8 @@
  * R.Hempel 2016-12-04 - Add support for Unity test framework
  *                     - Reorganize source files to avoid redundant content
  *                     - Move integrity and poison checking to separate file
+ * R.Hempel 2017-12-29 - Fix bug in realloc when requesting a new block that
+ *                        results in OOM error - see Issue 11
  * ----------------------------------------------------------------------------
  */
  
@@ -118,8 +120,6 @@ static unsigned short int umm_blocks( size_t size ) {
 /*
  * Split the block `c` into two blocks: `c` and `c + blocks`.
  *
- * - `cur_freemask` should be `0` if `c` used, or `UMM_FREELIST_MASK`
- *   otherwise.
  * - `new_freemask` should be `0` if `c + blocks` used, or `UMM_FREELIST_MASK`
  *   otherwise.
  *
@@ -149,7 +149,10 @@ static void umm_disconnect_from_free_list( unsigned short int c ) {
   UMM_NBLOCK(c) &= (~UMM_FREELIST_MASK);
 }
 
-/* ------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------
+ * The umm_assimilate_up() function assumes that UMM_NBLOCK(c) does NOT
+ * have the UMM_FREELIST_MASK bit set!
+ */
 
 static void umm_assimilate_up( unsigned short int c ) {
 
@@ -172,7 +175,10 @@ static void umm_assimilate_up( unsigned short int c ) {
   } 
 }
 
-/* ------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------
+ * The umm_assimilate_down() function assumes that UMM_NBLOCK(c) does NOT
+ * have the UMM_FREELIST_MASK bit set!
+ */
 
 static unsigned short int umm_assimilate_down( unsigned short int c, unsigned short int freemask ) {
 
@@ -399,8 +405,7 @@ void *umm_malloc( size_t size ) {
        * split current free block `cf` into two blocks. The first one will be
        * returned to user, so it's not free, and the second one will be free.
        */
-      umm_split_block( cf, blocks,
-          UMM_FREELIST_MASK/*new block is free*/);
+      umm_split_block( cf, blocks, UMM_FREELIST_MASK /*new block is free*/ );
 
       /*
        * `umm_split_block()` does not update the free pointers (it affects
@@ -499,14 +504,29 @@ void *umm_realloc( void *ptr, size_t size ) {
 
   blockSize = (UMM_NBLOCK(c) - c);
 
-  /* Figure out how many bytes are in this block */
-
-  curSize   = (blockSize*sizeof(umm_block))-(sizeof(((umm_block *)0)->header));
-
   /*
    * Ok, now that we're here, we know the block number of the original chunk
    * of memory, and we know how much new memory we want, and we know the original
    * block size...
+   *
+   * If we are requesting a smaller block than we have right now, split it off
+   * and free the rest
+   */
+
+  if( blockSize > blocks ) {
+    DBGLOG_DEBUG( "realloc a smaller size block - %i, split and free\n", blocks );
+
+    umm_split_block( c, blocks, 0 );
+    umm_free( (void *)&UMM_DATA(c+blocks) );
+
+    /* Release the critical section... */
+    UMM_CRITICAL_EXIT();
+
+    return( ptr );
+  }
+
+  /*
+   * If we need exactly as much memory as we have, then return now.
    */
 
   if( blockSize == blocks ) {
@@ -520,17 +540,59 @@ void *umm_realloc( void *ptr, size_t size ) {
     return( ptr );
   }
 
-  /*
-   * Now we have a block size that could be bigger or smaller. Either
-   * way, try to assimilate up to the next block before doing anything...
-   *
-   * If it's still too small, we have to free it anyways and it will save the
-   * assimilation step later in free :-)
+  /* After this point, we might need to copy to a new location, so figure out
+   * how many bytes are in this block
    */
 
-  umm_assimilate_up( c );
+  curSize   = (blockSize*sizeof(umm_block))-(sizeof(((umm_block *)0)->header));
 
   /*
+   * Now we know that we need more blocks than we have currently used, so we
+   * try to assimilate up if the next block is free.
+   */
+
+  if( UMM_NBLOCK(UMM_NBLOCK(c)) & UMM_FREELIST_MASK ) {
+
+    umm_assimilate_up( c );
+
+    blockSize = (UMM_NBLOCK(c) - c);
+
+    /* If the assimilated block is big enough then split to the new size and
+     * free the remainder.
+     */
+
+    if( blockSize > blocks ) {
+      DBGLOG_DEBUG( "realloc a smaller size block - %i, split and free\n", blocks );
+
+      umm_split_block( c, blocks, 0 );
+      umm_free( (void *)&UMM_DATA(c+blocks) );
+
+      /* Release the critical section... */
+      UMM_CRITICAL_EXIT();
+
+      return( ptr );
+    }
+
+    /* If the assimilated block is exactly thee right size then return the
+     * current memory pointer
+     */
+
+    if( blockSize == blocks ) {
+      /* This space intentionally left blank - return the original pointer! */
+
+      DBGLOG_DEBUG( "realloc the same size block - %i, do nothing\n", blocks );
+
+      /* Release the critical section... */
+      UMM_CRITICAL_EXIT();
+
+      return( ptr );
+    } 
+  }
+
+  /*
+   * We may have assimilated up at this point, but there is not enough memory
+   * to fulfil the request.
+   *
    * Now check if it might help to assimilate down, but don't actually
    * do the downward assimilation unless the resulting block will hold the
    * new request! If this block of code runs, then the new block will
@@ -538,7 +600,7 @@ void *umm_realloc( void *ptr, size_t size ) {
    */
 
   if( (UMM_NBLOCK(UMM_PBLOCK(c)) & UMM_FREELIST_MASK) &&
-      (blocks <= (UMM_NBLOCK(c)-UMM_PBLOCK(c)))    ) {
+      (blocks <= (UMM_NBLOCK(c) - UMM_PBLOCK(c))) ) { 
 
     /* Check if the resulting block would be big enough... */
 
@@ -564,7 +626,7 @@ void *umm_realloc( void *ptr, size_t size ) {
 
     /* And don't forget to adjust the pointer to the new block location! */
 
-    ptr    = (void *)&UMM_DATA(c);
+    ptr = (void *)&UMM_DATA(c);
   }
 
   /* Now calculate the block size again...and we'll have three cases */
@@ -572,7 +634,7 @@ void *umm_realloc( void *ptr, size_t size ) {
   blockSize = (UMM_NBLOCK(c) - c);
 
   if( blockSize == blocks ) {
-    /* This space intentionally left blank - return the original pointer! */
+    /* This space intentionally left blank - return the new pointer! */
 
     DBGLOG_DEBUG( "realloc the same size block - %i, do nothing\n", blocks );
 
@@ -586,8 +648,11 @@ void *umm_realloc( void *ptr, size_t size ) {
 
     umm_split_block( c, blocks, 0 );
     umm_free( (void *)&UMM_DATA(c+blocks) );
+
   } else {
-    /* New block is bigger than the old block... */
+    /*
+     * We need a bigger block than the one we have
+     */
 
     void *oldptr = ptr;
 
@@ -599,10 +664,24 @@ void *umm_realloc( void *ptr, size_t size ) {
      */
 
     if( (ptr = umm_malloc( size )) ) {
-      memcpy( ptr, oldptr, curSize );
-    }
+      memmove( ptr, oldptr, curSize );
+      umm_free( oldptr );
 
-    umm_free( oldptr );
+    } else {
+
+      /*
+       * The allocation failed! Return everything back the way it was...
+       */
+
+      DBGLOG_DEBUG( "realloc %i to a bigger block %i failed - restore the old blocks!\n", blockSize, blocks );
+
+      blocks = umm_blocks( curSize );
+
+      if (blockSize > blocks ) {
+        umm_split_block( c, blocks, 0 );
+        umm_free( (void *)&UMM_DATA(c+blocks) );
+      }
+    }
   }
 
   /* Release the critical section... */
@@ -617,6 +696,7 @@ void *umm_calloc( size_t num, size_t item_size ) {
   void *ret;
 
   ret = umm_malloc((size_t)(item_size * num));
+
   if (ret)
       memset(ret, 0x00, (size_t)(item_size * num));
 
