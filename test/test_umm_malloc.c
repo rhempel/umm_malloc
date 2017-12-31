@@ -9,7 +9,7 @@
 
 /* Use the default DBGLOG_LEVEL and DBGLOG_FUNCTION */
 
-#define DBGLOG_LEVEL 6
+#define DBGLOG_LEVEL 0
 
 #include "dbglog/dbglog.h"
 
@@ -762,13 +762,13 @@ TEST(Realloc, NewBlock)
     void *mem1 = umm_malloc (2);
     void *mem2 = umm_malloc (2);
 
-    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[12], mem0                        );
-    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[20], mem1                        );
-    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[28], mem2                        );
+    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[12], mem0 );
+    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[20], mem1 );
+    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[28], mem2 );
 
     /* Realloc the middle block - should need a totally new block */
 
-    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[36], (umm_realloc (mem1, 5)));
+    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[36], (umm_realloc(mem1, 5)));
     TEST_ASSERT_TRUE (check_blocks (ReallocNewBlock, ARRAYELEMENTCOUNT(ReallocNewBlock)));
 }
 
