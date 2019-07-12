@@ -456,7 +456,7 @@ void *umm_malloc( size_t size ) {
   /* Protect the critical section... */
   UMM_CRITICAL_ENTRY();
 
-  ret = umm_malloc_unsafe(size);
+  ptr = umm_malloc_unsafe(size);
 
   /* Release the critical section... */
   UMM_CRITICAL_EXIT();
