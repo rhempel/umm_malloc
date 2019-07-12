@@ -314,7 +314,7 @@ void umm_free( void *ptr ) {
   UMM_CRITICAL_ENTRY();
 
   /* Call the core logic */
-  umm_free_unsafe();
+  umm_free_unsafe(ptr);
 
   /* Release the critical section... */
   UMM_CRITICAL_EXIT();
