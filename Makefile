@@ -12,8 +12,8 @@ else
 	TARGET_EXTENSION=out
 endif
 
-PATHU = ../Unity/src/
-PATHX = ../Unity/extras/fixture/src/
+PATHU = unity/src/
+PATHX = unity/extras/fixture/src/
 PATHS = src/
 PATHI = includes/c-helper-macros/
 PATHT = test/
