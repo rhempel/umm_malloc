@@ -30,6 +30,7 @@ void *umm_info( void *ptr, int force ) {
    */
   memset( &ummHeapInfo, 0, sizeof( ummHeapInfo ) );
 
+  DBGLOG_FORCE( force, "\n" );
   DBGLOG_FORCE( force, "+----------+-------+--------+--------+-------+--------+--------+\n" );
   DBGLOG_FORCE( force, "|0x%08lx|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
       (unsigned long)(&UMM_BLOCK(blockNo)),

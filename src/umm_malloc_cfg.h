@@ -39,7 +39,9 @@
  * ----------------------------------------------------------------------------
  */
 
+#ifdef TEST_BUILD
 extern char test_umm_heap[];
+#endif
 
 /* Start addresses and the size of the heap */
 #define UMM_MALLOC_CFG_HEAP_ADDR (test_umm_heap)
@@ -81,7 +83,6 @@ extern char test_umm_heap[];
 
   void *umm_info( void *ptr, int force );
   size_t umm_free_heap_size( void );
-
 #else
 #endif
 
@@ -95,8 +96,20 @@ extern char test_umm_heap[];
  * called from within umm_malloc()
  */
 
-#define UMM_CRITICAL_ENTRY()
-#define UMM_CRITICAL_EXIT()
+#ifdef TEST_BUILD
+    extern int umm_critical_depth;
+    extern int umm_max_critical_depth;
+    #define UMM_CRITICAL_ENTRY() {\
+          ++umm_critical_depth; \
+          if (umm_critical_depth > umm_max_critical_depth) { \
+              umm_max_critical_depth = umm_critical_depth; \
+          } \
+    }
+    #define UMM_CRITICAL_EXIT()  (umm_critical_depth--)
+#else
+    #define UMM_CRITICAL_ENTRY()
+    #define UMM_CRITICAL_EXIT()
+#endif
 
 /*
  * -D UMM_INTEGRITY_CHECK :

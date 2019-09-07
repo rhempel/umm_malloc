@@ -15,6 +15,9 @@
 
 char test_umm_heap[UMM_MALLOC_CFG_HEAP_SIZE];
 
+int umm_max_critical_depth;
+int umm_critical_depth;
+
 // Note, the block size calculation depends on knowledge of the internals
 // of umm_malloc.c which are not to be exposed to the user of the library
 
@@ -105,11 +108,14 @@ TEST_GROUP(Heap);
 
 TEST_SETUP(Heap)
 {
-    umm_init ();
+    umm_init();
+    umm_critical_depth = 0;
+    umm_max_critical_depth = 0;
 }
 
 TEST_TEAR_DOWN(Heap)
 {
+    TEST_ASSERT_LESS_OR_EQUAL (1, umm_max_critical_depth);
 }
 
 struct block_test_values Initialization_test_values[] =
@@ -248,6 +254,7 @@ TEST_SETUP(MultiMalloc)
 
 TEST_TEAR_DOWN(MultiMalloc)
 {
+    TEST_ASSERT_LESS_OR_EQUAL (1, umm_max_critical_depth);
 }
 
 struct block_test_values MultiMallocManySmall_test_values[] =
@@ -337,6 +344,7 @@ TEST_SETUP(Free)
 
 TEST_TEAR_DOWN(Free)
 {
+    TEST_ASSERT_LESS_OR_EQUAL (1, umm_max_critical_depth);
 }
 
 TEST(Free, NullPtr)
@@ -571,6 +579,7 @@ TEST_SETUP(Realloc)
 
 TEST_TEAR_DOWN(Realloc)
 {
+    TEST_ASSERT_LESS_OR_EQUAL (1, umm_max_critical_depth);
 }
 
 struct block_test_values ReallocTooBig_test_values[] =
@@ -795,6 +804,7 @@ TEST_SETUP(Poison)
 
 TEST_TEAR_DOWN(Poison)
 {
+    TEST_ASSERT_LESS_OR_EQUAL (1, umm_max_critical_depth);
 }
 
 TEST(Poison, First)
