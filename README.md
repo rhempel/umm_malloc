@@ -34,6 +34,10 @@ Dimitry Frank contributed many helpful additions to make things more
 robust including a user specified config file and a method of testing
 the integrity of the data structures.
 
+Github user @devyte provided useful feedback on the nesting of functions
+as well as a fix for the problem that separates out the core free and
+malloc functionality.
+
 ## Usage
 
 Copy the `umm_malloc_cfg_example.h` file to `umm_malloc_cfg.h` and
