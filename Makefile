@@ -3,9 +3,15 @@ ifeq ($(OSTYPE),cygwin)
 	MKDIR=mkdir -p
 	TARGET_EXTENSION=out
 else ifeq ($(OS),Windows_NT)
+    ifeq ("$(SHELL)","/bin/sh")
+	CLEANUP=rm -f
+	MKDIR=mkdir -p
+	TARGET_EXTENSION=exe
+    else
 	CLEANUP=del /F /Q
 	MKDIR=mkdir
 	TARGET_EXTENSION=exe
+    endif
 else
 	CLEANUP=rm -f
 	MKDIR=mkdir -p
@@ -37,7 +43,7 @@ $(PATHR)%.txt: $(PATHB)%.$(TARGET_EXTENSION)
 	-./$< > $@ 2>&1
 
 $(PATHB)test_%.$(TARGET_EXTENSION): $(PATHO)test_%.o $(PATHO)%.o $(PATHU)unity.o $(PATHX)unity_fixture.o
-	$(LINK) -o $@ $^ 
+	$(LINK) -o $@ $^
 
 $(PATHO)%.o:: $(PATHT)%.c
 	$(COMPILE) $(CFLAGS) $< -o $@
@@ -46,10 +52,10 @@ $(PATHO)%.o:: $(PATHS)%.c
 	$(COMPILE) $(CFLAGS) $< -o $@
 
 $(PATHO)%.o:: $(PATHU)%.c $(PATHU)%.h
-	$(COMPILE) $(CFLAGS) $< -o $@ 
+	$(COMPILE) $(CFLAGS) $< -o $@
 
 $(PATHO)%.o:: $(PATHX)%.c $(PATHX)%.h
-	$(COMPILE) $(CFLAGS) $< -o $@ 
+	$(COMPILE) $(CFLAGS) $< -o $@
 
 $(PATHD)%.d:: $(PATHT)%.c
 	$(DEPEND) $@ $<
@@ -80,6 +86,7 @@ clean:
 .PHONY: test
 
 test: $(BUILD_PATHS) $(RESULTS)
+	@echo "OSTYPE:$(OSTYPE) OS:$(OS) SHELL:$(SHELL)"
 	@echo "-----------------------\nIGNORES:\n-----------------------"
 	@echo `grep -s IGNORE $(PATHR)*.txt`
 	@echo "-----------------------\nFAILURES:\n-----------------------"
