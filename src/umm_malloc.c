@@ -565,29 +565,51 @@ void *umm_realloc( void *ptr, size_t size ) {
    * 1. If the new block is the same size or smaller than the current block do
    *    nothing.
    * 2. If the next block is free and adding it to the current block gives us
-   *    enough memory, assimilate the next block.
-   * 3. If the prev block is free and adding it to the current block gives us
+   *    EXACTLY enough memory, assimilate the next block. This avoids unwanted
+   *    fragmentation of free memory.
+   *
+   * The following cases may be better handled with memory copies to reduce
+   * fragmentation
+   *
+   * 3. If the previous block is NOT free and the next block is free and
+   *    adding it to the current block gives us enough memory, assimilate
+   *    the next block. This may introduce a bit of fragmentation.
+   * 4. If the prev block is free and adding it to the current block gives us
    *    enough memory, remove the previous block from the free list, assimilate
    *    it, copy to the new block.
-   * 4. If the prev and next blocks are free and adding them to the current
+   * 5. If the prev and next blocks are free and adding them to the current
    *    block gives us enough memory, assimilate the next block, remove the
    *    previous block from the free list, assimilate it, copy to the new block.
-   * 5. Otherwise try to allocate an entirely new block of memory. If the
+   * 6. Otherwise try to allocate an entirely new block of memory. If the
    *    allocation works free the old block and return the new pointer. If
    *    the allocation fails, return NULL and leave the old block intact.
+   *
+   * TODO: Add some conditional code to optimise for less fragmentation
+   *       by simply allocating new memory if we need to copy anyways.
    *
    * All that's left to do is decide if the fit was exact or not. If the fit
    * was not exact, then split the memory block so that we use only the requested
    * number of blocks and add what's left to the free list.
    */
 
+    //  Case 1 - block is same size or smaller
     if (blockSize >= blocks) {
         DBGLOG_DEBUG( "realloc the same or smaller size block - %i, do nothing\n", blocks );
         /* This space intentionally left blank */
-    } else if ((blockSize + nextBlockSize) >= blocks) {
+
+    //  Case 2 - block + next block fits EXACTLY
+    } else if ((blockSize + nextBlockSize) == blocks) {
+        DBGLOG_DEBUG( "exact realloc using next block - %i\n", blocks );
+        umm_assimilate_up( c );
+        blockSize += nextBlockSize;
+
+    //  Case 3 - prev block NOT free and block + next block fits
+    } else if ((0 == prevBlockSize) && (blockSize + nextBlockSize) >= blocks) {
         DBGLOG_DEBUG( "realloc using next block - %i\n", blocks );
         umm_assimilate_up( c );
         blockSize += nextBlockSize;
+
+    //  Case 4 - prev block + block fits
     } else if ((prevBlockSize + blockSize) >= blocks) {
         DBGLOG_DEBUG( "realloc using prev block - %i\n", blocks );
         umm_disconnect_from_free_list( UMM_PBLOCK(c) );
@@ -595,6 +617,8 @@ void *umm_realloc( void *ptr, size_t size ) {
         memmove( (void *)&UMM_DATA(c), ptr, curSize );
         ptr = (void *)&UMM_DATA(c);
         blockSize += prevBlockSize;
+
+    //  Case 5 - prev block + block + next block fits
     } else if ((prevBlockSize + blockSize + nextBlockSize) >= blocks) {
         DBGLOG_DEBUG( "realloc using prev and next block - %i\n", blocks );
         umm_assimilate_up( c );
@@ -603,6 +627,8 @@ void *umm_realloc( void *ptr, size_t size ) {
         memmove( (void *)&UMM_DATA(c), ptr, curSize );
         ptr = (void *)&UMM_DATA(c);
         blockSize += (prevBlockSize + nextBlockSize);
+
+    //  Case 6 - default is we need to realloc a new block
     } else {
         DBGLOG_DEBUG( "realloc a completely new block %i\n", blocks );
         void *oldptr = ptr;
