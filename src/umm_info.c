@@ -18,6 +18,9 @@
 UMM_HEAP_INFO ummHeapInfo;
 
 void *umm_info( void *ptr, int force ) {
+  if(umm_heap == NULL) {
+    umm_init();
+  }
 
   unsigned short int blockNo = 0;
 
