@@ -1,5 +1,7 @@
 #ifdef UMM_INFO
 
+#include <math.h>
+
 /* ----------------------------------------------------------------------------
  * One of the coolest things about this little library is that it's VERY
  * easy to get debug information about the memory heap by simply iterating
@@ -63,6 +65,7 @@ void *umm_info( void *ptr, int force ) {
     if( UMM_NBLOCK(blockNo) & UMM_FREELIST_MASK ) {
       ++ummHeapInfo.freeEntries;
       ummHeapInfo.freeBlocks += curBlocks;
+      ummHeapInfo.freeBlocksSquared += (curBlocks * curBlocks);
 
       if (ummHeapInfo.maxFreeContiguousBlocks < curBlocks) {
         ummHeapInfo.maxFreeContiguousBlocks = curBlocks;
@@ -102,19 +105,11 @@ void *umm_info( void *ptr, int force ) {
   }
 
   /*
-   * Update the accounting totals with information from the last block, the
-   * rest must be free!
+   * The very last block is used as a placeholder to indicate that
+   * there are no more blocks in the heap, so it cannot be used
+   * for anything - at the same time, the size of this block must
+   * ALWAYS be exactly 1 !
    */
-
-  {
-    size_t curBlocks = UMM_NUMBLOCKS-blockNo;
-    ummHeapInfo.freeBlocks  += curBlocks;
-    ummHeapInfo.totalBlocks += curBlocks;
-
-    if (ummHeapInfo.maxFreeContiguousBlocks < curBlocks) {
-      ummHeapInfo.maxFreeContiguousBlocks = curBlocks;
-    }
-  }
 
   DBGLOG_FORCE( force, "|0x%08lx|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
       (unsigned long)(&UMM_BLOCK(blockNo)),
@@ -150,6 +145,20 @@ void *umm_info( void *ptr, int force ) {
 size_t umm_free_heap_size( void ) {
   umm_info(NULL, 0);
   return (size_t)ummHeapInfo.freeBlocks * sizeof(umm_block);
+}
+
+size_t umm_max_free_block_size( void ) {
+  umm_info(NULL, 0);
+  return ummHeapInfo.maxFreeContiguousBlocks * sizeof(umm_block);
+}
+
+unsigned int umm_fragmentation_metric( void ) {
+  umm_info(NULL, 0);
+  if (0 == ummHeapInfo.freeBlocks) {
+      return 0;
+  } else {
+      return (100 - (((int)(sqrtf(ummHeapInfo.freeBlocksSquared)) * 100)/ummHeapInfo.freeBlocks));
+  }
 }
 
 /* ------------------------------------------------------------------------ */

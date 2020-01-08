@@ -74,6 +74,7 @@ extern char test_umm_heap[];
     unsigned short int totalBlocks;
     unsigned short int usedBlocks;
     unsigned short int freeBlocks;
+    unsigned       int freeBlocksSquared;
 
     unsigned short int maxFreeContiguousBlocks;
   }
@@ -83,6 +84,8 @@ extern char test_umm_heap[];
 
   void *umm_info( void *ptr, int force );
   size_t umm_free_heap_size( void );
+  size_t umm_max_free_block_size( void );
+  unsigned int umm_fragmentation_metric( void );
 #else
 #endif
 
