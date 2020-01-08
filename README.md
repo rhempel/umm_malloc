@@ -34,9 +34,13 @@ Dimitry Frank contributed many helpful additions to make things more
 robust including a user specified config file and a method of testing
 the integrity of the data structures.
 
-Github user @devyte provided useful feedback on the nesting of functions
+GitHub user @devyte provided useful feedback on the nesting of functions
 as well as a fix for the problem that separates out the core free and
 malloc functionality.
+
+GitHub users @d-a-v and @devyte provided great input on establishing
+a heap fragmentation metric which they graciously allowed to be used
+in umm_malloc.
 
 ## Usage
 
