@@ -829,6 +829,152 @@ TEST_GROUP_RUNNER(Realloc)
 }
 
 
+TEST_GROUP(Metrics);
+
+TEST_SETUP(Metrics)
+{
+    umm_init ();
+}
+
+TEST_TEAR_DOWN(Metrics)
+{
+    TEST_ASSERT_LESS_OR_EQUAL (1, umm_max_critical_depth);
+}
+
+TEST(Metrics, Empty)
+{
+    umm_info(0, false);
+    TEST_ASSERT_EQUAL (0, umm_fragmentation_metric());
+}
+
+TEST(Metrics, Full)
+{
+  void *p[UMM_LASTBLOCK];
+  int i;
+
+  memset(p, sizeof(p), 0);
+
+  for( i=0; i<(UMM_LASTBLOCK-1); ++i )
+    p[i] = umm_malloc(4);
+
+  umm_info(0, false);
+  TEST_ASSERT_EQUAL (0, umm_fragmentation_metric());
+}
+
+TEST(Metrics, SparseFull)
+{
+  void *p[UMM_LASTBLOCK];
+  int i;
+
+  memset(p, sizeof(p), 0);
+
+  for( i=0; i<(UMM_LASTBLOCK); ++i )
+    p[i] = umm_malloc(4);
+
+  for( i=1; i<(UMM_LASTBLOCK); i+=2 )
+    umm_free(p[i]);
+
+  umm_info(0, false);
+  TEST_ASSERT_EQUAL (99, umm_fragmentation_metric());
+}
+
+TEST(Metrics, Sparse7of8)
+{
+  void *p[UMM_LASTBLOCK];
+  int i;
+
+  memset(p, sizeof(p), 0);
+
+  for( i=0; i<((UMM_LASTBLOCK*7)/8); ++i )
+    p[i] = umm_malloc(4);
+
+  for( i=1; i<((UMM_LASTBLOCK*7)/8); i+=2 )
+    umm_free(p[i]);
+
+  umm_info(0, false);
+  TEST_ASSERT_EQUAL (78, umm_fragmentation_metric());
+}
+
+TEST(Metrics, Sparse3of4)
+{
+  void *p[UMM_LASTBLOCK];
+  int i;
+
+  memset(p, sizeof(p), 0);
+
+  for( i=0; i<((UMM_LASTBLOCK*3)/4); ++i )
+    p[i] = umm_malloc(4);
+
+  for( i=1; i<((UMM_LASTBLOCK*3)/4); i+=2 )
+    umm_free(p[i]);
+
+  umm_info(0, false);
+  TEST_ASSERT_EQUAL (61, umm_fragmentation_metric());
+}
+
+TEST(Metrics, Sparse1of2)
+{
+  void *p[UMM_LASTBLOCK];
+  int i;
+
+  memset(p, sizeof(p), 0);
+
+  for( i=0; i<((UMM_LASTBLOCK*1)/2); ++i )
+    p[i] = umm_malloc(4);
+
+  for( i=1; i<((UMM_LASTBLOCK*1)/2); i+=2 )
+    umm_free(p[i]);
+
+  umm_info(0, false);
+  TEST_ASSERT_EQUAL (34, umm_fragmentation_metric());
+}
+
+TEST(Metrics, Sparse1of4)
+{
+  void *p[UMM_LASTBLOCK];
+  int i;
+
+  memset(p, sizeof(p), 0);
+
+  for( i=0; i<((UMM_LASTBLOCK*1)/4); ++i )
+    p[i] = umm_malloc(4);
+
+  for( i=1; i<((UMM_LASTBLOCK*1)/4); i+=2 )
+    umm_free(p[i]);
+
+  umm_info(0, false);
+  TEST_ASSERT_EQUAL (15, umm_fragmentation_metric());
+}
+
+TEST(Metrics, Sparse1of8)
+{
+  void *p[UMM_LASTBLOCK];
+  int i;
+
+  memset(p, sizeof(p), 0);
+
+  for( i=0; i<((UMM_LASTBLOCK*1)/8); ++i )
+    p[i] = umm_malloc(4);
+
+  for( i=1; i<((UMM_LASTBLOCK*1)/8); i+=2 )
+    umm_free(p[i]);
+
+  umm_info(0, false);
+  TEST_ASSERT_EQUAL (7, umm_fragmentation_metric());
+}
+
+TEST_GROUP_RUNNER(Metrics)
+{
+    RUN_TEST_CASE(Metrics, Empty);
+    RUN_TEST_CASE(Metrics, Full);
+    RUN_TEST_CASE(Metrics, SparseFull);
+    RUN_TEST_CASE(Metrics, Sparse7of8);
+    RUN_TEST_CASE(Metrics, Sparse3of4);
+    RUN_TEST_CASE(Metrics, Sparse1of2);
+    RUN_TEST_CASE(Metrics, Sparse1of4);
+    RUN_TEST_CASE(Metrics, Sparse1of8);
+}
+
 
 TEST_GROUP(Poison);
 
@@ -996,7 +1142,7 @@ TEST(Poison, Stress)
     TEST_ASSERT_NOT_EQUAL(0, POISON_CHECK());
   }
 
-  umm_info( 0, true );
+  umm_info( 0, true  );
   DBGLOG_FORCE( true, "Free Heap Size: %ld\n", umm_free_heap_size() );
 }
 
@@ -1009,13 +1155,15 @@ TEST_GROUP_RUNNER(Poison)
     RUN_TEST_CASE(Poison, Stress);
 }
 
+
 static void runAllTests (void)
 {
     RUN_TEST_GROUP(FirstMalloc);
     RUN_TEST_GROUP(MultiMalloc);
     RUN_TEST_GROUP(Free);
-    RUN_TEST_GROUP(Poison);
     RUN_TEST_GROUP(Realloc);
+    RUN_TEST_GROUP(Metrics);
+    RUN_TEST_GROUP(Poison);
 }
 
 int main (int argc, const char* argv[])
