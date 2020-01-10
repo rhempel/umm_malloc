@@ -5,6 +5,8 @@
 #ifndef _UMM_MALLOC_CFG_H
 #define _UMM_MALLOC_CFG_H
 
+#include <stdbool.h>
+
 /*
  * There are a number of defines you can set at compile time that affect how
  * the memory allocator will operate.
@@ -67,24 +69,25 @@ extern char test_umm_heap[];
 
 #ifdef UMM_INFO
   typedef struct UMM_HEAP_INFO_t {
-    unsigned short int totalEntries;
-    unsigned short int usedEntries;
-    unsigned short int freeEntries;
+    unsigned int totalEntries;
+    unsigned int usedEntries;
+    unsigned int freeEntries;
 
-    unsigned short int totalBlocks;
-    unsigned short int usedBlocks;
-    unsigned short int freeBlocks;
-    unsigned       int freeBlocksSquared;
+    unsigned int totalBlocks;
+    unsigned int usedBlocks;
+    unsigned int freeBlocks;
+    unsigned int freeBlocksSquared;
 
-    unsigned short int maxFreeContiguousBlocks;
+    unsigned int maxFreeContiguousBlocks;
   }
   UMM_HEAP_INFO;
 
   extern UMM_HEAP_INFO ummHeapInfo;
 
-  void *umm_info( void *ptr, int force );
+  void *umm_info( void *ptr, bool force );
   size_t umm_free_heap_size( void );
   size_t umm_max_free_block_size( void );
+  unsigned int umm_in_use_metric( void );
   unsigned int umm_fragmentation_metric( void );
 #else
 #endif
@@ -131,7 +134,7 @@ extern char test_umm_heap[];
 #define UMM_INTEGRITY_CHECK
 
 #ifdef UMM_INTEGRITY_CHECK
-   int umm_integrity_check( void );
+   extern bool umm_integrity_check( void );
 #  define INTEGRITY_CHECK() umm_integrity_check()
    extern void umm_corruption(void);
 #  define UMM_HEAP_CORRUPTION_CB() printf( "Heap Corruption!" )
@@ -156,7 +159,7 @@ extern char test_umm_heap[];
  *    UMM_POISON_SIZE_AFTER:
  *      Number of poison bytes after each block e.g. 2
  *    UMM_POISONED_BLOCK_LEN_TYPE
- *      Type of the exact buffer length, e.g. `short`
+ *      Type of the exact buffer length, e.g. `uint16_t`
  *
  * NOTE: each allocated buffer is aligned by 4 bytes. But when poisoning is
  * enabled, actual pointer returned to user is shifted by
@@ -171,14 +174,14 @@ extern char test_umm_heap[];
 
 #define UMM_POISON_SIZE_BEFORE 4
 #define UMM_POISON_SIZE_AFTER 4
-#define UMM_POISONED_BLOCK_LEN_TYPE short
+#define UMM_POISONED_BLOCK_LEN_TYPE uint16_t
 
 #ifdef UMM_POISON_CHECK
    void *umm_poison_malloc( size_t size );
    void *umm_poison_calloc( size_t num, size_t size );
    void *umm_poison_realloc( void *ptr, size_t size );
    void  umm_poison_free( void *ptr );
-   int   umm_poison_check( void );
+   bool  umm_poison_check( void );
 #  define POISON_CHECK() umm_poison_check()
 #else
 #  define POISON_CHECK() 0
