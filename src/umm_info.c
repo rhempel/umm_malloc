@@ -1,5 +1,7 @@
 #ifdef UMM_INFO
 
+#include <stdint.h>
+#include <stdbool.h>
 #include <math.h>
 
 /* ----------------------------------------------------------------------------
@@ -19,12 +21,12 @@
 
 UMM_HEAP_INFO ummHeapInfo;
 
-void *umm_info( void *ptr, int force ) {
+void *umm_info( void *ptr, bool force ) {
   if(umm_heap == NULL) {
     umm_init();
   }
 
-  unsigned short int blockNo = 0;
+  uint16_t blockNo = 0;
 
   /* Protect the critical section... */
   UMM_CRITICAL_ENTRY();
@@ -38,7 +40,7 @@ void *umm_info( void *ptr, int force ) {
   DBGLOG_FORCE( force, "\n" );
   DBGLOG_FORCE( force, "+----------+-------+--------+--------+-------+--------+--------+\n" );
   DBGLOG_FORCE( force, "|0x%08lx|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
-      (unsigned long)(&UMM_BLOCK(blockNo)),
+      (void *)(&UMM_BLOCK(blockNo)),
       blockNo,
       UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK,
       UMM_PBLOCK(blockNo),
@@ -72,11 +74,11 @@ void *umm_info( void *ptr, int force ) {
       }
 
       DBGLOG_FORCE( force, "|0x%08lx|B %5i|NB %5i|PB %5i|Z %5u|NF %5i|PF %5i|\n",
-          (unsigned long)(&UMM_BLOCK(blockNo)),
+          (void *)(&UMM_BLOCK(blockNo)),
           blockNo,
           UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK,
           UMM_PBLOCK(blockNo),
-          (unsigned int)curBlocks,
+          (uint16_t)curBlocks,
           UMM_NFREE(blockNo),
           UMM_PFREE(blockNo) );
 
@@ -94,11 +96,11 @@ void *umm_info( void *ptr, int force ) {
       ummHeapInfo.usedBlocks += curBlocks;
 
       DBGLOG_FORCE( force, "|0x%08lx|B %5i|NB %5i|PB %5i|Z %5u|\n",
-          (unsigned long)(&UMM_BLOCK(blockNo)),
+          (void *)(&UMM_BLOCK(blockNo)),
           blockNo,
           UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK,
           UMM_PBLOCK(blockNo),
-          (unsigned int)curBlocks );
+          (uint16_t)curBlocks );
     }
 
     blockNo = UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK;
@@ -112,7 +114,7 @@ void *umm_info( void *ptr, int force ) {
    */
 
   DBGLOG_FORCE( force, "|0x%08lx|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
-      (unsigned long)(&UMM_BLOCK(blockNo)),
+      (void *)(&UMM_BLOCK(blockNo)),
       blockNo,
       UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK,
       UMM_PBLOCK(blockNo),
@@ -152,12 +154,12 @@ size_t umm_max_free_block_size( void ) {
   return ummHeapInfo.maxFreeContiguousBlocks * sizeof(umm_block);
 }
 
-unsigned int umm_fragmentation_metric( void ) {
+uint32_t umm_fragmentation_metric( void ) {
   umm_info(NULL, 0);
   if (0 == ummHeapInfo.freeBlocks) {
       return 0;
   } else {
-      return (100 - (((int)(sqrtf(ummHeapInfo.freeBlocksSquared)) * 100)/ummHeapInfo.freeBlocks));
+      return (100 - (((uint32_t)(sqrtf(ummHeapInfo.freeBlocksSquared)) * 100)/ummHeapInfo.freeBlocks));
   }
 }
 

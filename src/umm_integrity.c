@@ -1,5 +1,9 @@
 /* integrity check (UMM_INTEGRITY_CHECK) {{{ */
-#if defined(UMM_INTEGRITY_CHECK)
+#ifdef UMM_INTEGRITY_CHECK
+
+#include <stdint.h>
+#include <stdbool.h>
+
 /*
  * Perform integrity check of the whole heap data. Returns 1 in case of
  * success, 0 otherwise.
@@ -22,10 +26,10 @@
  * This way, we ensure that the free flag is in sync with the free pointers
  * chain.
  */
-int umm_integrity_check(void) {
-  int ok = 1;
-  unsigned short int prev;
-  unsigned short int cur;
+bool umm_integrity_check(void) {
+  bool ok = true;
+  uint16_t prev;
+  uint16_t cur;
 
   if (umm_heap == NULL) {
     umm_init();
@@ -40,8 +44,8 @@ int umm_integrity_check(void) {
     if (cur >= UMM_NUMBLOCKS) {
       printf("heap integrity broken: too large next free num: %d "
           "(in block %d, addr 0x%lx)\n", cur, prev,
-          (unsigned long)&UMM_NBLOCK(prev));
-      ok = 0;
+          (void *)&UMM_NBLOCK(prev));
+      ok = false;
       goto clean;
     }
     if (cur == 0) {
@@ -54,7 +58,7 @@ int umm_integrity_check(void) {
       printf("heap integrity broken: free links don't match: "
           "%d -> %d, but %d -> %d\n",
           prev, cur, cur, UMM_PFREE(cur));
-      ok = 0;
+      ok = false;
       goto clean;
     }
 
@@ -72,8 +76,8 @@ int umm_integrity_check(void) {
     if (cur >= UMM_NUMBLOCKS) {
       printf("heap integrity broken: too large next block num: %d "
           "(in block %d, addr 0x%lx)\n", cur, prev,
-          (unsigned long)&UMM_NBLOCK(prev));
-      ok = 0;
+          (void *)&UMM_NBLOCK(prev));
+      ok = false;
       goto clean;
     }
     if (cur == 0) {
@@ -86,11 +90,11 @@ int umm_integrity_check(void) {
         != (UMM_PBLOCK(cur) & UMM_FREELIST_MASK))
     {
       printf("heap integrity broken: mask wrong at addr 0x%lx: n=0x%x, p=0x%x\n",
-          (unsigned long)&UMM_NBLOCK(cur),
+          (void *)&UMM_NBLOCK(cur),
           (UMM_NBLOCK(cur) & UMM_FREELIST_MASK),
           (UMM_PBLOCK(cur) & UMM_FREELIST_MASK)
           );
-      ok = 0;
+      ok = false;
       goto clean;
     }
 
@@ -98,8 +102,8 @@ int umm_integrity_check(void) {
     if (cur <= prev ) {
      printf("heap integrity broken: next block %d is before prev this one "
           "(in block %d, addr 0x%lx)\n", cur, prev,
-          (unsigned long)&UMM_NBLOCK(prev));
-      ok = 0;
+          (void *)&UMM_NBLOCK(prev));
+      ok = false;
       goto clean;
     }
 
@@ -111,7 +115,7 @@ int umm_integrity_check(void) {
       printf("heap integrity broken: block links don't match: "
           "%d -> %d, but %d -> %d\n",
           prev, cur, cur, UMM_PBLOCK(cur));
-      ok = 0;
+      ok = false;
       goto clean;
     }
 

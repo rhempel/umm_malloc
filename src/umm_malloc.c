@@ -28,9 +28,12 @@
  *                        wrappers that use critical section protection macros
  *                        and static core functions that assume they are
  *                        running in a protected con text. Thanks @devyte
+ * R.Hempel 2020-01-07 - Add support for Fragmentation metric - See Issue 14
+ * R.Hempel 2020-01-   - Use explicitly sized values from stdint.h
  * ----------------------------------------------------------------------------
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -47,8 +50,8 @@
 /* ------------------------------------------------------------------------- */
 
 UMM_H_ATTPACKPRE typedef struct umm_ptr_t {
-  unsigned short int next;
-  unsigned short int prev;
+  uint16_t next;
+  uint16_t prev;
 } UMM_H_ATTPACKSUF umm_ptr;
 
 
@@ -58,7 +61,7 @@ UMM_H_ATTPACKPRE typedef struct umm_block_t {
   } header;
   union {
     umm_ptr free;
-    unsigned char data[4];
+    uint8_t data[4];
   } body;
 } UMM_H_ATTPACKSUF umm_block;
 
@@ -68,7 +71,7 @@ UMM_H_ATTPACKPRE typedef struct umm_block_t {
 /* ------------------------------------------------------------------------- */
 
 umm_block *umm_heap = NULL;
-unsigned short int umm_numblocks = 0;
+uint16_t umm_numblocks = 0;
 
 #define UMM_NUMBLOCKS (umm_numblocks)
 
@@ -96,7 +99,7 @@ unsigned short int umm_numblocks = 0;
 
 /* ------------------------------------------------------------------------ */
 
-static unsigned short int umm_blocks( size_t size ) {
+static uint16_t umm_blocks( size_t size ) {
 
   /*
    * The calculation of the block size is not too difficult, but there are
@@ -129,9 +132,9 @@ static unsigned short int umm_blocks( size_t size ) {
  *
  * Note that free pointers are NOT modified by this function.
  */
-static void umm_split_block( unsigned short int c,
-    unsigned short int blocks,
-    unsigned short int new_freemask ) {
+static void umm_split_block( uint16_t c,
+    uint16_t blocks,
+    uint16_t new_freemask ) {
 
   UMM_NBLOCK(c+blocks) = (UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) | new_freemask;
   UMM_PBLOCK(c+blocks) = c;
@@ -142,7 +145,7 @@ static void umm_split_block( unsigned short int c,
 
 /* ------------------------------------------------------------------------ */
 
-static void umm_disconnect_from_free_list( unsigned short int c ) {
+static void umm_disconnect_from_free_list( uint16_t c ) {
   /* Disconnect this block from the FREE list */
 
   UMM_NFREE(UMM_PFREE(c)) = UMM_NFREE(c);
@@ -158,7 +161,7 @@ static void umm_disconnect_from_free_list( unsigned short int c ) {
  * have the UMM_FREELIST_MASK bit set!
  */
 
-static void umm_assimilate_up( unsigned short int c ) {
+static void umm_assimilate_up( uint16_t c ) {
 
   if( UMM_NBLOCK(UMM_NBLOCK(c)) & UMM_FREELIST_MASK ) {
     /*
@@ -184,7 +187,7 @@ static void umm_assimilate_up( unsigned short int c ) {
  * have the UMM_FREELIST_MASK bit set!
  */
 
-static unsigned short int umm_assimilate_down( unsigned short int c, unsigned short int freemask ) {
+static uint16_t umm_assimilate_down( uint16_t c, uint16_t freemask ) {
 
   UMM_NBLOCK(UMM_PBLOCK(c)) = UMM_NBLOCK(c) | freemask;
   UMM_PBLOCK(UMM_NBLOCK(c)) = UMM_PBLOCK(c);
@@ -203,11 +206,11 @@ void umm_init( void ) {
   /* setup initial blank heap structure */
   {
     /* index of the 0th `umm_block` */
-    const unsigned short int block_0th = 0;
+    const uint16_t block_0th = 0;
     /* index of the 1st `umm_block` */
-    const unsigned short int block_1th = 1;
+    const uint16_t block_1th = 1;
     /* index of the latest `umm_block` */
-    const unsigned short int block_last = UMM_NUMBLOCKS - 1;
+    const uint16_t block_last = UMM_NUMBLOCKS - 1;
 
     /* setup the 0th `umm_block`, which just points to the 1st */
     UMM_NBLOCK(block_0th) = block_1th;
@@ -257,7 +260,7 @@ void umm_init( void ) {
 
 static void umm_free_core( void *ptr ) {
 
-  unsigned short int c;
+  uint16_t c;
 
   /*
    * FIXME: At some point it might be a good idea to add a check to make sure
@@ -270,7 +273,7 @@ static void umm_free_core( void *ptr ) {
 
   /* Figure out which block we're in. Note the use of truncated division... */
 
-  c = (((char *)ptr)-(char *)(&(umm_heap[0])))/sizeof(umm_block);
+  c = (((void *)ptr)-(void *)(&(umm_heap[0])))/sizeof(umm_block);
 
   DBGLOG_DEBUG( "Freeing block %6i\n", c );
 
@@ -333,13 +336,13 @@ void umm_free( void *ptr ) {
  */
 
 static void *umm_malloc_core( size_t size ) {
-  unsigned short int blocks;
-  unsigned short int blockSize = 0;
+  uint16_t blocks;
+  uint16_t blockSize = 0;
 
-  unsigned short int bestSize;
-  unsigned short int bestBlock;
+  uint16_t bestSize;
+  uint16_t bestBlock;
 
-  unsigned short int cf;
+  uint16_t cf;
 
   blocks = umm_blocks( size );
 
@@ -472,12 +475,12 @@ void *umm_malloc( size_t size ) {
 
 void *umm_realloc( void *ptr, size_t size ) {
 
-  unsigned short int blocks;
-  unsigned short int blockSize;
-  unsigned short int prevBlockSize = 0;
-  unsigned short int nextBlockSize = 0;
+  uint16_t blocks;
+  uint16_t blockSize;
+  uint16_t prevBlockSize = 0;
+  uint16_t nextBlockSize = 0;
 
-  unsigned short int c;
+  uint16_t c;
 
   size_t curSize;
 
@@ -526,7 +529,7 @@ void *umm_realloc( void *ptr, size_t size ) {
 
   /* Figure out which block we're in. Note the use of truncated division... */
 
-  c = (((char *)ptr)-(char *)(&(umm_heap[0])))/sizeof(umm_block);
+  c = (((void *)ptr)-(void *)(&(umm_heap[0])))/sizeof(umm_block);
 
   /* Figure out how big this block is ... the free bit is not set :-) */
 
