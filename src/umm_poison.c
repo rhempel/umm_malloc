@@ -18,7 +18,7 @@ static size_t poison_size(size_t s) {
  */
 static void dump_mem ( const void *ptr, size_t len ) {
   while (len--) {
-    DBGLOG_ERROR(" 0x%.2x", (uint8_t)(*ptr++));
+    DBGLOG_ERROR(" 0x%.2x", (*(uint8_t *)ptr++));
   }
 }
 
@@ -65,7 +65,7 @@ static bool check_poison_block( umm_block *pblock ) {
   int ok = true;
 
   if (pblock->header.used.next & UMM_FREELIST_MASK) {
-    DBGLOG_ERROR( "check_poison_block is called for free block 0x%lx\n", (unsigned long)pblock);
+    DBGLOG_ERROR( "check_poison_block is called for free block 0x%lx\n", (void *)pblock);
   } else {
     /* the block is used; let's check poison */
     void *pc = (void *)pblock->body.data;
