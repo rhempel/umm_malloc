@@ -29,7 +29,7 @@
  *                        and static core functions that assume they are
  *                        running in a protected con text. Thanks @devyte
  * R.Hempel 2020-01-07 - Add support for Fragmentation metric - See Issue 14
- * R.Hempel 2020-01-   - Use explicitly sized values from stdint.h
+ * R.Hempel 2020-01-12 - Use explicitly sized values from stdint.h - See Issue 15
  * ----------------------------------------------------------------------------
  */
 
@@ -37,9 +37,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "umm_malloc.h"
-
 #include "umm_malloc_cfg.h"   /* user-dependent */
+#include "umm_malloc.h"
 
 /* Use the default DBGLOG_LEVEL and DBGLOG_FUNCTION */
 
@@ -156,14 +155,62 @@ static void umm_disconnect_from_free_list( uint16_t c ) {
   UMM_NBLOCK(c) &= (~UMM_FREELIST_MASK);
 }
 
+#ifdef UMM_METRICS
+UMM_H_ATTPACKPRE struct _umm_metrics_t {
+  uint32_t freeBlocks;
+  uint32_t freeBlocksSquared;
+} UMM_H_ATTPACKSUF umm_metrics;
+
+static void umm_fragmentation_metric_init( void ) {
+    umm_metrics.freeBlocks = UMM_NUMBLOCKS - 2;
+    umm_metrics.freeBlocksSquared = umm_metrics.freeBlocks * umm_metrics.freeBlocks;
+}
+
+static void umm_fragmentation_metric_add( uint16_t c ) {
+    uint16_t blocks = (UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) - c;
+    DBGLOG_DEBUG( "Add block %i size %i to free metric\n", c, blocks);
+    umm_metrics.freeBlocks += blocks;
+    umm_metrics.freeBlocksSquared += (blocks * blocks);
+}
+
+static void umm_fragmentation_metric_remove( uint16_t c ) {
+    uint16_t blocks = (UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) - c;
+    DBGLOG_DEBUG( "Remove block %i size %i from free metric\n", c, blocks);
+    umm_metrics.freeBlocks -= blocks;
+    umm_metrics.freeBlocksSquared -= (blocks * blocks);
+}
+
+int umm_fragmentation_metric_freeblocks( void ) {
+    return umm_metrics.freeBlocks;
+}
+
+int umm_fragmentation_metric( void ) {
+  DBGLOG_DEBUG( "freeBlocks %i freeBlocksSquared %i\n", umm_metrics.freeBlocks, umm_metrics.freeBlocksSquared);
+  if (0 == umm_metrics.freeBlocks) {
+      return 0;
+  } else {
+      return (100 - (((uint32_t)(sqrtf(umm_metrics.freeBlocksSquared)) * 100)/(umm_metrics.freeBlocks)));
+  }
+}
+
+#else
+  #define umm_fragmentation_metric_init()
+  #define umm_fragmentation_metric_add(c)
+  #define umm_fragmentation_metric_remove(c)
+#endif // UMM_METRICS
+
 /* ------------------------------------------------------------------------
- * The umm_assimilate_up() function assumes that UMM_NBLOCK(c) does NOT
- * have the UMM_FREELIST_MASK bit set!
+ * The umm_assimilate_up() function does not assume that UMM_NBLOCK(c)
+ * has the UMM_FREELIST_MASK bit set. It only assimilates up if the
+ * next block is free.
  */
 
 static void umm_assimilate_up( uint16_t c ) {
 
   if( UMM_NBLOCK(UMM_NBLOCK(c)) & UMM_FREELIST_MASK ) {
+
+    umm_fragmentation_metric_remove( UMM_NBLOCK(c) );
+
     /*
      * The next block is a free block, so assimilate up and remove it from
      * the free list
@@ -184,13 +231,29 @@ static void umm_assimilate_up( uint16_t c ) {
 
 /* ------------------------------------------------------------------------
  * The umm_assimilate_down() function assumes that UMM_NBLOCK(c) does NOT
- * have the UMM_FREELIST_MASK bit set!
+ * have the UMM_FREELIST_MASK bit set. In other words, try to assimilate
+ * up before assimilating down.
  */
 
 static uint16_t umm_assimilate_down( uint16_t c, uint16_t freemask ) {
 
+  // We are going to assimilate down to the previous block because
+  // it was free, so remove it from the fragmentation metric
+
+  umm_fragmentation_metric_remove(UMM_PBLOCK(c));
+
   UMM_NBLOCK(UMM_PBLOCK(c)) = UMM_NBLOCK(c) | freemask;
   UMM_PBLOCK(UMM_NBLOCK(c)) = UMM_PBLOCK(c);
+
+  if (freemask) {
+      // We are going to free the entire assimilated block
+      // so add it to the fragmentation metric. A good
+      // compiler will optimize away the empty if statement
+      // when UMM_INFO is not defined, so don't worry about
+      // guarding it.
+
+      umm_fragmentation_metric_add(UMM_PBLOCK(c));
+  }
 
   return( UMM_PBLOCK(c) );
 }
@@ -205,6 +268,8 @@ void umm_init( void ) {
 
   /* setup initial blank heap structure */
   {
+    umm_fragmentation_metric_init();
+
     /* index of the 0th `umm_block` */
     const uint16_t block_0th = 0;
     /* index of the 1st `umm_block` */
@@ -285,7 +350,7 @@ static void umm_free_core( void *ptr ) {
 
   if( UMM_NBLOCK(UMM_PBLOCK(c)) & UMM_FREELIST_MASK ) {
 
-    DBGLOG_DEBUG( "Assimilate down to next block, which is FREE\n" );
+    DBGLOG_DEBUG( "Assimilate down to previous block, which is FREE\n" );
 
     c = umm_assimilate_down(c, UMM_FREELIST_MASK);
   } else {
@@ -293,6 +358,7 @@ static void umm_free_core( void *ptr ) {
      * The previous block is not a free block, so add this one to the head
      * of the free list
      */
+    umm_fragmentation_metric_add(c);
 
     DBGLOG_DEBUG( "Just add to head of free list\n" );
 
@@ -386,6 +452,9 @@ static void *umm_malloc_core( size_t size ) {
   }
 
   if( UMM_NBLOCK(cf) & UMM_BLOCKNO_MASK && blockSize >= blocks ) {
+
+    umm_fragmentation_metric_remove(cf);
+
     /*
      * This is an existing block in the memory heap, we just need to split off
      * what we need, unlink it from the free list and mark it as in use, and
@@ -400,8 +469,8 @@ static void *umm_malloc_core( size_t size ) {
       /* Disconnect this block from the FREE list */
 
       umm_disconnect_from_free_list( cf );
-
     } else {
+
       /* It's not an exact fit and we need to split off a block. */
       DBGLOG_DEBUG( "Allocating %6i blocks starting at %6i - existing\n", blocks, cf );
 
@@ -410,6 +479,8 @@ static void *umm_malloc_core( size_t size ) {
        * returned to user, so it's not free, and the second one will be free.
        */
       umm_split_block( cf, blocks, UMM_FREELIST_MASK /*new block is free*/ );
+
+      umm_fragmentation_metric_add(UMM_NBLOCK(cf));
 
       /*
        * `umm_split_block()` does not update the free pointers (it affects
@@ -426,6 +497,7 @@ static void *umm_malloc_core( size_t size ) {
       UMM_PFREE( UMM_NFREE(cf) ) = cf + blocks;
       UMM_NFREE( cf + blocks ) = UMM_NFREE(cf);
     }
+
   } else {
     /* Out of memory */
 

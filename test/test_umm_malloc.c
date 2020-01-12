@@ -4,8 +4,8 @@
 
 #include "unity_fixture.h"
 
-#include "umm_malloc.h"
 #include "umm_malloc_cfg.h"
+#include "umm_malloc.h"
 
 /* Use the default DBGLOG_LEVEL and DBGLOG_FUNCTION */
 

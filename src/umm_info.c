@@ -154,14 +154,5 @@ size_t umm_max_free_block_size( void ) {
   return ummHeapInfo.maxFreeContiguousBlocks * sizeof(umm_block);
 }
 
-uint32_t umm_fragmentation_metric( void ) {
-  umm_info(NULL, 0);
-  if (0 == ummHeapInfo.freeBlocks) {
-      return 0;
-  } else {
-      return (100 - (((uint32_t)(sqrtf(ummHeapInfo.freeBlocksSquared)) * 100)/ummHeapInfo.freeBlocks));
-  }
-}
-
 /* ------------------------------------------------------------------------ */
 #endif

@@ -17,7 +17,7 @@
  *
  * Set this if you want to compile in the test suite
  *
- * -D UMM_BEST_FIT (defualt)
+ * -D UMM_BEST_FIT (default)
  *
  * Set this if you want to use a best-fit algorithm for allocating new
  * blocks
@@ -26,6 +26,12 @@
  *
  * Set this if you want to use a first-fit algorithm for allocating new
  * blocks
+ *
+ * -D UMM_METRICS
+ *
+ * Set this if you want to have access to a minimal set of heap metrics
+ * that can be used to guage heap health. Note that enabling this
+ * define will add a slight runtime penalty.
  *
  * -D UMM_DBG_LOG_LEVEL=n
  *
@@ -58,9 +64,22 @@ extern char test_umm_heap[];
 #undef  UMM_FIRST_FIT
 
 /*
+ * -D UMM_METRICS :
+ *
+ * Enables a minimal set of metrics that can be used to gauge the
+ * health of the heap, including:
+ *
+ * - Percentage of heap used
+ * - Percentage heap fragmentation
+ * - Largest free block (requires traversal of free list)
+ */
+
+#define UMM_METRICS
+
+/*
  * -D UMM_INFO :
  *
- * Enables a dup of the heap contents and a function to return the total
+ * Enables a dump of the heap contents and a function to return the total
  * heap size that is unallocated - note this is not the same as the largest
  * unallocated block on the heap!
  */
@@ -88,7 +107,6 @@ extern char test_umm_heap[];
   size_t umm_free_heap_size( void );
   size_t umm_max_free_block_size( void );
   unsigned int umm_in_use_metric( void );
-  unsigned int umm_fragmentation_metric( void );
 #else
 #endif
 
