@@ -844,7 +844,7 @@ TEST_TEAR_DOWN(Metrics)
 TEST(Metrics, Empty)
 {
     umm_info(0, false);
-    TEST_ASSERT_EQUAL (0, umm_fragmentation_metric());
+    TEST_ASSERT_EQUAL (0, umm_info_fragmentation_metric());
 }
 
 TEST(Metrics, Full)
@@ -858,7 +858,7 @@ TEST(Metrics, Full)
     p[i] = umm_malloc(4);
 
   umm_info(0, false);
-  TEST_ASSERT_EQUAL (0, umm_fragmentation_metric());
+  TEST_ASSERT_EQUAL (0, umm_info_fragmentation_metric());
 }
 
 TEST(Metrics, SparseFull)
@@ -875,7 +875,7 @@ TEST(Metrics, SparseFull)
     umm_free(p[i]);
 
   umm_info(0, false);
-  TEST_ASSERT_EQUAL (99, umm_fragmentation_metric());
+  TEST_ASSERT_EQUAL (99, umm_info_fragmentation_metric());
 }
 
 TEST(Metrics, Sparse7of8)
@@ -892,7 +892,7 @@ TEST(Metrics, Sparse7of8)
     umm_free(p[i]);
 
   umm_info(0, false);
-  TEST_ASSERT_EQUAL (78, umm_fragmentation_metric());
+  TEST_ASSERT_EQUAL (78, umm_info_fragmentation_metric());
 }
 
 TEST(Metrics, Sparse3of4)
@@ -909,7 +909,7 @@ TEST(Metrics, Sparse3of4)
     umm_free(p[i]);
 
   umm_info(0, false);
-  TEST_ASSERT_EQUAL (61, umm_fragmentation_metric());
+  TEST_ASSERT_EQUAL (61, umm_info_fragmentation_metric());
 }
 
 TEST(Metrics, Sparse1of2)
@@ -926,7 +926,7 @@ TEST(Metrics, Sparse1of2)
     umm_free(p[i]);
 
   umm_info(0, false);
-  TEST_ASSERT_EQUAL (34, umm_fragmentation_metric());
+  TEST_ASSERT_EQUAL (34, umm_info_fragmentation_metric());
 }
 
 TEST(Metrics, Sparse1of4)
@@ -943,7 +943,7 @@ TEST(Metrics, Sparse1of4)
     umm_free(p[i]);
 
   umm_info(0, false);
-  TEST_ASSERT_EQUAL (15, umm_fragmentation_metric());
+  TEST_ASSERT_EQUAL (15, umm_info_fragmentation_metric());
 }
 
 TEST(Metrics, Sparse1of8)
@@ -960,7 +960,7 @@ TEST(Metrics, Sparse1of8)
     umm_free(p[i]);
 
   umm_info(0, false);
-  TEST_ASSERT_EQUAL (7, umm_fragmentation_metric());
+  TEST_ASSERT_EQUAL (7, umm_info_fragmentation_metric());
 }
 
 TEST_GROUP_RUNNER(Metrics)
@@ -1143,7 +1143,7 @@ TEST(Poison, Stress)
   }
 
   umm_info( 0, true  );
-  DBGLOG_FORCE( true, "Free Heap Size: %ld\n", umm_free_heap_size() );
+  DBGLOG_FORCE( true, "Free Heap Size: %ld\n", umm_info_free_heap_size() );
 }
 
 TEST_GROUP_RUNNER(Poison)

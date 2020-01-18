@@ -27,12 +27,6 @@
  * Set this if you want to use a first-fit algorithm for allocating new
  * blocks
  *
- * -D UMM_METRICS
- *
- * Set this if you want to have access to a minimal set of heap metrics
- * that can be used to guage heap health. Note that enabling this
- * define will add a slight runtime penalty.
- *
  * -D UMM_DBG_LOG_LEVEL=n
  *
  * Set n to a value from 0 to 6 depending on how verbose you want the debug
@@ -64,19 +58,6 @@ extern char test_umm_heap[];
 #undef  UMM_FIRST_FIT
 
 /*
- * -D UMM_METRICS :
- *
- * Enables a minimal set of metrics that can be used to gauge the
- * health of the heap, including:
- *
- * - Percentage of heap used
- * - Percentage heap fragmentation
- * - Largest free block (requires traversal of free list)
- */
-
-#define UMM_METRICS
-
-/*
  * -D UMM_INFO :
  *
  * Enables a dump of the heap contents and a function to return the total
@@ -87,26 +68,14 @@ extern char test_umm_heap[];
 #define UMM_INFO
 
 #ifdef UMM_INFO
-  typedef struct UMM_HEAP_INFO_t {
-    unsigned int totalEntries;
-    unsigned int usedEntries;
-    unsigned int freeEntries;
-
-    unsigned int totalBlocks;
-    unsigned int usedBlocks;
-    unsigned int freeBlocks;
-    unsigned int freeBlocksSquared;
-
-    unsigned int maxFreeContiguousBlocks;
-  }
-  UMM_HEAP_INFO;
-
-  extern UMM_HEAP_INFO ummHeapInfo;
-
-  void *umm_info( void *ptr, bool force );
-  size_t umm_free_heap_size( void );
-  size_t umm_max_free_block_size( void );
-  unsigned int umm_in_use_metric( void );
+  extern void *umm_info( void *ptr, bool force );
+  extern size_t umm_info_total_heap_size( void );
+  extern size_t umm_info_free_heap_size( void );
+  extern size_t umm_info_used_heap_size( void );
+  extern size_t umm_info_max_free_block_size( void );
+  extern size_t umm_info_max_used_block_size( void );
+  extern size_t umm_info_usage_metric( void );
+  extern size_t umm_info_fragmentation_metric( void );
 #else
 #endif
 

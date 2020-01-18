@@ -19,7 +19,22 @@
  * ----------------------------------------------------------------------------
  */
 
-UMM_HEAP_INFO ummHeapInfo;
+typedef struct UMM_HEAP_INFO_t {
+    unsigned int totalEntries;
+    unsigned int usedEntries;
+    unsigned int freeEntries;
+
+    unsigned int totalBlocks;
+    unsigned int usedBlocks;
+    unsigned int freeBlocks;
+    unsigned int freeBlocksSquared;
+
+    unsigned int usedBlockMaxContiguous;
+    unsigned int freeBlockMaxContiguous;
+}
+UMM_HEAP_INFO;
+
+static UMM_HEAP_INFO ummHeapInfo;
 
 void *umm_info( void *ptr, bool force ) {
   if(umm_heap == NULL) {
@@ -69,8 +84,8 @@ void *umm_info( void *ptr, bool force ) {
       ummHeapInfo.freeBlocks += curBlocks;
       ummHeapInfo.freeBlocksSquared += (curBlocks * curBlocks);
 
-      if (ummHeapInfo.maxFreeContiguousBlocks < curBlocks) {
-        ummHeapInfo.maxFreeContiguousBlocks = curBlocks;
+      if (ummHeapInfo.freeBlockMaxContiguous < curBlocks) {
+        ummHeapInfo.freeBlockMaxContiguous = curBlocks;
       }
 
       DBGLOG_FORCE( force, "|0x%08lx|B %5i|NB %5i|PB %5i|Z %5u|NF %5i|PF %5i|\n",
@@ -94,6 +109,10 @@ void *umm_info( void *ptr, bool force ) {
     } else {
       ++ummHeapInfo.usedEntries;
       ummHeapInfo.usedBlocks += curBlocks;
+
+      if (ummHeapInfo.usedBlockMaxContiguous < curBlocks) {
+        ummHeapInfo.usedBlockMaxContiguous = curBlocks;
+      }
 
       DBGLOG_FORCE( force, "|0x%08lx|B %5i|NB %5i|PB %5i|Z %5u|\n",
           (void *)(&UMM_BLOCK(blockNo)),
@@ -121,19 +140,21 @@ void *umm_info( void *ptr, bool force ) {
       UMM_NUMBLOCKS-blockNo,
       UMM_NFREE(blockNo),
       UMM_PFREE(blockNo) );
-
   DBGLOG_FORCE( force, "+----------+-------+--------+--------+-------+--------+--------+\n" );
-
   DBGLOG_FORCE( force, "Total Entries %5i    Used Entries %5i    Free Entries %5i\n",
       ummHeapInfo.totalEntries,
       ummHeapInfo.usedEntries,
       ummHeapInfo.freeEntries );
-
   DBGLOG_FORCE( force, "Total Blocks  %5i    Used Blocks  %5i    Free Blocks  %5i\n",
       ummHeapInfo.totalBlocks,
       ummHeapInfo.usedBlocks,
       ummHeapInfo.freeBlocks  );
-
+  DBGLOG_FORCE( force, "+--------------------------------------------------------------+\n" );
+  DBGLOG_FORCE( force, "Max Free Contiguous Blocks: %5i\n", ummHeapInfo.freeBlockMaxContiguous );
+  DBGLOG_FORCE( force, "Max Used Contiguous Blocks: %5i\n", ummHeapInfo.usedBlockMaxContiguous );
+  DBGLOG_FORCE( force, "+--------------------------------------------------------------+\n" );
+  DBGLOG_FORCE( force, "Usage Metric:               %5i\n", umm_info_usage_metric());
+  DBGLOG_FORCE( force, "Fragmentation Metric:       %5i\n", umm_info_fragmentation_metric());
   DBGLOG_FORCE( force, "+--------------------------------------------------------------+\n" );
 
   /* Release the critical section... */
@@ -144,14 +165,36 @@ void *umm_info( void *ptr, bool force ) {
 
 /* ------------------------------------------------------------------------ */
 
-size_t umm_free_heap_size( void ) {
-  umm_info(NULL, 0);
+size_t umm_info_total_heap_size( void ) {
+  return (size_t)ummHeapInfo.totalBlocks * sizeof(umm_block);
+}
+
+size_t umm_info_free_heap_size( void ) {
   return (size_t)ummHeapInfo.freeBlocks * sizeof(umm_block);
 }
 
-size_t umm_max_free_block_size( void ) {
-  umm_info(NULL, 0);
-  return ummHeapInfo.maxFreeContiguousBlocks * sizeof(umm_block);
+size_t umm_info_used_heap_size( void ) {
+  return (size_t)ummHeapInfo.usedBlocks * sizeof(umm_block);
+}
+
+size_t umm_info_max_free_block_size( void ) {
+  return ummHeapInfo.freeBlockMaxContiguous * sizeof(umm_block);
+}
+
+size_t umm_info_max_used_block_size( void ) {
+  return ummHeapInfo.usedBlockMaxContiguous * sizeof(umm_block);
+}
+
+size_t umm_info_usage_metric( void ) {
+  return (((ummHeapInfo.usedBlocks) * 100)/(ummHeapInfo.totalBlocks));
+}
+
+size_t umm_info_fragmentation_metric( void ) {
+  if (0 == ummHeapInfo.freeBlocks) {
+      return 0;
+  } else {
+      return (100 - (((uint32_t)(sqrtf(ummHeapInfo.freeBlocksSquared)) * 100)/(ummHeapInfo.freeBlocks)));
+  }
 }
 
 /* ------------------------------------------------------------------------ */
