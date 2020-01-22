@@ -1,6 +1,7 @@
-#include "stdbool.h"
-#include "stdlib.h"
-#include "string.h"
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 #include "unity_fixture.h"
 
@@ -103,6 +104,164 @@ bool check_blocks (struct block_test_values *t, size_t n)
     }
     return (true);
 }
+
+#define STRESS_TEST_ENTRIES (256)
+
+struct umm_test_functions {
+   void *(*umm_test_malloc)(size_t);
+   void *(*umm_test_calloc)(size_t, size_t);
+   void *(*umm_test_realloc)(void *, size_t);
+   void  (*umm_test_free)(void *);
+   bool  (*umm_test_check)(void);
+};
+
+#ifdef UMM_POISON_CHECK
+struct umm_test_functions umm_test_poison = {
+   umm_poison_malloc,
+   umm_poison_calloc,
+   umm_poison_realloc,
+   umm_poison_free,
+   umm_poison_check,
+};
+#else
+bool  umm_check( void ) {
+    return true;
+}
+
+struct umm_test_functions umm_test_poison = {
+   umm_malloc,
+   umm_calloc,
+   umm_realloc,
+   umm_free,
+   umm_check,
+};
+#endif
+
+#define UMM_TEST_GETTIME(a) (clock_gettime(CLOCK_REALTIME, &a))
+
+#define UMM_TEST_DIFFTIME(a,b) ((b.tv_sec - a.tv_sec) * (uint64_t)(1000*1000*1000) \
+                                 + (b.tv_nsec - a.tv_nsec +100))
+
+uint64_t stress_test( int iterations, struct umm_test_functions *f )
+{
+  void *p[STRESS_TEST_ENTRIES];
+  int i,j,k;
+  size_t s;
+
+  uint64_t umm_malloc_time = 0;
+
+  struct timespec start, end;
+
+  srand(0);
+
+  for( j=0; j<STRESS_TEST_ENTRIES; ++j )
+    p[j] = (void *)NULL;
+
+  for( i=0; i<iterations; ++i ) {
+    j = rand()%STRESS_TEST_ENTRIES;
+
+    switch( rand() % 16 ) {
+
+      case  0:
+      case  1:
+      case  2:
+      case  3:
+      case  4:
+      case  5:
+      case  6:
+        {
+          UMM_TEST_GETTIME(start);
+          p[j] = f->umm_test_realloc(p[j], 0);
+          UMM_TEST_GETTIME(end);
+          umm_malloc_time += UMM_TEST_DIFFTIME(start,end);
+
+          TEST_ASSERT_NULL( p[j] );
+          break;
+        }
+      case  7:
+      case  8:
+        {
+          s = rand()%64;
+          UMM_TEST_GETTIME(start);
+          p[j] = f->umm_test_realloc(p[j], s );
+          UMM_TEST_GETTIME(end);
+          umm_malloc_time += UMM_TEST_DIFFTIME(start,end);
+
+          if( s ) {
+              TEST_ASSERT_NOT_NULL( p[j] );
+              memset(p[j], 0xfe, s);
+          } else {
+              TEST_ASSERT_NULL( p[j] );
+          }
+          break;
+        }
+
+      case  9:
+      case 10:
+      case 11:
+      case 12:
+        {
+          s = rand()%100;
+          UMM_TEST_GETTIME(start);
+          p[j] = f->umm_test_realloc(p[j], s );
+          UMM_TEST_GETTIME(end);
+          umm_malloc_time += UMM_TEST_DIFFTIME(start,end);
+
+          if( s ) {
+              TEST_ASSERT_NOT_NULL( p[j] );
+              memset(p[j], 0xfe, s);
+          } else {
+              TEST_ASSERT_NULL( p[j] );
+          }
+          break;
+        }
+
+      case 13:
+      case 14:
+        {
+          s = rand()%200;
+          UMM_TEST_GETTIME(start);
+          f->umm_test_free(p[j]);
+          p[j] = f->umm_test_calloc( 1, s );
+          UMM_TEST_GETTIME(end);
+          umm_malloc_time += UMM_TEST_DIFFTIME(start,end);
+
+          if( s ) {
+              TEST_ASSERT_NOT_NULL( p[j] );
+              TEST_ASSERT_TRUE( check_all_bytes(p[j], s, 0x00) );
+              memset(p[j], 0xfe, s);
+          } else {
+              TEST_ASSERT_NULL( p[j] );
+          }
+          break;
+        }
+
+      default:
+        {
+          s = rand()%400;
+          UMM_TEST_GETTIME(start);
+          f->umm_test_free(p[j]);
+          p[j] = f->umm_test_malloc( s );
+          UMM_TEST_GETTIME(end);
+          umm_malloc_time += UMM_TEST_DIFFTIME(start,end);
+
+          if( s ) {
+              TEST_ASSERT_NOT_NULL( p[j] );
+              memset(p[j], 0xfe, s);
+          } else {
+              TEST_ASSERT_NULL( p[j] );
+          }
+          break;
+        }
+    }
+
+    TEST_ASSERT_NOT_EQUAL(0, INTEGRITY_CHECK());
+    TEST_ASSERT_NOT_EQUAL(0, POISON_CHECK());
+  }
+
+  return umm_malloc_time;
+}
+
 
 TEST_GROUP(Heap);
 
@@ -990,12 +1149,12 @@ TEST_TEAR_DOWN(Poison)
 
 TEST(Poison, First)
 {
-    TEST_ASSERT_NOT_NULL (umm_poison_malloc(4));
+    TEST_ASSERT_NOT_NULL (umm_test_poison.umm_test_malloc(4));
 }
 
 TEST(Poison, ClobberLeading)
 {
-    void *p = umm_poison_malloc(64);
+    void *p = umm_test_poison.umm_test_malloc(64);
 
     p = p - 1;
     *(char *)p = 0x00;
@@ -1005,7 +1164,7 @@ TEST(Poison, ClobberLeading)
 
 TEST(Poison, ClobberTrailing)
 {
-    void *p = umm_poison_malloc(64);
+    void *p = umm_test_poison.umm_test_malloc(64);
 
     p = p + 64;
     *(char *)p = 0x00;
@@ -1033,10 +1192,10 @@ TEST(Poison, Random)
         s = rand()%64;
 
         if (p[j]) {
-            umm_poison_free(p[j]);
+            umm_test_poison.umm_test_free(p[j]);
         }
 
-        p[j] = umm_poison_malloc(s);
+        p[j] = umm_test_poison.umm_test_malloc(s);
 
         if (0==s) {
             TEST_ASSERT_NULL( p[j] );
@@ -1048,111 +1207,42 @@ TEST(Poison, Random)
 
 TEST(Poison, Stress)
 {
-  void *p[256];
-  int i,j;
-  size_t s;
+  uint64_t t = stress_test( 100*1000, &umm_test_poison );
 
-  srand(0);
+  umm_info( 0, false  );
+  DBGLOG_FORCE( true, "Free Heap Size:    %ld\n", umm_free_heap_size() );
+  DBGLOG_FORCE( true, "Typical Time (usec): %lf\n", (double)t/((100*1000)) );
+}
 
-  for( j=0; j<256; ++j )
-    p[j] = (void *)NULL;
+TEST(Poison, StressLoop)
+{
+  int i;
+  uint64_t t = 0;
+  uint64_t total = 0;
 
-  for( i=0; i<100000; ++i ) {
-    j = rand()%256;
-
-    switch( rand() % 16 ) {
-
-      case  0:
-      case  1:
-      case  2:
-      case  3:
-      case  4:
-      case  5:
-      case  6:
-        {
-          p[j] = umm_poison_realloc(p[j], 0);
-          TEST_ASSERT_NULL( p[j] );
-          break;
-        }
-      case  7:
-      case  8:
-        {
-          s = rand()%64;
-          p[j] = umm_poison_realloc(p[j], s );
-          if( s ) {
-              TEST_ASSERT_NOT_NULL( p[j] );
-              memset(p[j], 0xfe, s);
-          } else {
-              TEST_ASSERT_NULL( p[j] );
-          }
-          break;
-        }
-
-      case  9:
-      case 10:
-      case 11:
-      case 12:
-        {
-          s = rand()%100;
-          p[j] = umm_poison_realloc(p[j], s );
-
-          if( s ) {
-              TEST_ASSERT_NOT_NULL( p[j] );
-              memset(p[j], 0xfe, s);
-          } else {
-              TEST_ASSERT_NULL( p[j] );
-          }
-          break;
-        }
-
-      case 13:
-      case 14:
-        {
-          s = rand()%200;
-          umm_poison_free(p[j]);
-          p[j] = umm_poison_calloc( 1, s );
-
-          if( s ) {
-              TEST_ASSERT_NOT_NULL( p[j] );
-              TEST_ASSERT_TRUE( check_all_bytes(p[j], s, 0x00) );
-              memset(p[j], 0xfe, s);
-          } else {
-              TEST_ASSERT_NULL( p[j] );
-          }
-          break;
-        }
-
-      default:
-        {
-          s = rand()%400;
-          umm_poison_free(p[j]);
-          p[j] = umm_poison_malloc( s );
-
-          if( s ) {
-              TEST_ASSERT_NOT_NULL( p[j] );
-              memset(p[j], 0xfe, s);
-          } else {
-              TEST_ASSERT_NULL( p[j] );
-          }
-          break;
-        }
-    }
-
-    TEST_ASSERT_NOT_EQUAL(0, INTEGRITY_CHECK());
-    TEST_ASSERT_NOT_EQUAL(0, POISON_CHECK());
+  for (i=0; i<4; ++i) {
+      umm_init();
+      t = stress_test( 100*1000, &umm_test_poison );
+      umm_info( 0, false  );
+      DBGLOG_FORCE( true, "Free Heap Size:      %ld\n", umm_free_heap_size() );
+      DBGLOG_FORCE( true, "Typical Time (usec): %lf\n", (double)t/((100*1000)) );
+      total += t;
   }
 
-  umm_info( 0, true  );
-  DBGLOG_FORCE( true, "Free Heap Size: %ld\n", umm_free_heap_size() );
+  DBGLOG_FORCE( true, "Typical Time (usec): %lf\n", (double)total/(4*(100*1000)) );
 }
+
 
 TEST_GROUP_RUNNER(Poison)
 {
     RUN_TEST_CASE(Poison, First);
+#ifdef UMM_POISON_CHECK
     RUN_TEST_CASE(Poison, ClobberLeading);
     RUN_TEST_CASE(Poison, ClobberTrailing);
+#endif
     RUN_TEST_CASE(Poison, Random);
     RUN_TEST_CASE(Poison, Stress);
+    RUN_TEST_CASE(Poison, StressLoop);
 }
 
 
