@@ -49,11 +49,11 @@
 
 #ifdef TEST_BUILD
 extern char test_umm_heap[];
-#endif
 
 /* Start addresses and the size of the heap */
 #define UMM_MALLOC_CFG_HEAP_ADDR (test_umm_heap)
 #define UMM_MALLOC_CFG_HEAP_SIZE 0x10000
+#endif
 
 /* A couple of macros to make packing structures less compiler dependent */
 
@@ -75,6 +75,15 @@ extern char test_umm_heap[];
  */
 
 #define UMM_METRICS
+
+#ifdef UMM_METRICS
+  extern int umm_fragmentation_metric( void );
+#else
+  #define umm_fragmentation_metric_init()
+  #define umm_fragmentation_metric_add(c)
+  #define umm_fragmentation_metric_remove(c)
+  #define umm_fragmentation_metric() (0)
+#endif // UMM_METRICS
 
 /*
  * -D UMM_INFO :
@@ -103,11 +112,15 @@ extern char test_umm_heap[];
 
   extern UMM_HEAP_INFO ummHeapInfo;
 
-  void *umm_info( void *ptr, bool force );
-  size_t umm_free_heap_size( void );
-  size_t umm_max_free_block_size( void );
-  unsigned int umm_in_use_metric( void );
+  extern void *umm_info( void *ptr, bool force );
+  extern size_t umm_free_heap_size( void );
+  extern size_t umm_max_free_block_size( void );
+  extern unsigned int umm_in_use_metric( void );
 #else
+  #define umm_info(p,b)
+  #define umm_free_heap_size() (0)
+  #define umm_max_free_block_size() (0)
+  #define umm_in_use_metric() (0)
 #endif
 
 /*

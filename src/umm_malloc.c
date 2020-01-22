@@ -30,6 +30,7 @@
  *                        running in a protected con text. Thanks @devyte
  * R.Hempel 2020-01-07 - Add support for Fragmentation metric - See Issue 14
  * R.Hempel 2020-01-12 - Use explicitly sized values from stdint.h - See Issue 15
+ * R.Hempel 2020-01-20 - Move metric functions back to umm_info - See Issue 29
  * ----------------------------------------------------------------------------
  */
 
@@ -154,50 +155,6 @@ static void umm_disconnect_from_free_list( uint16_t c ) {
 
   UMM_NBLOCK(c) &= (~UMM_FREELIST_MASK);
 }
-
-#ifdef UMM_METRICS
-UMM_H_ATTPACKPRE struct _umm_metrics_t {
-  uint32_t freeBlocks;
-  uint32_t freeBlocksSquared;
-} UMM_H_ATTPACKSUF umm_metrics;
-
-static void umm_fragmentation_metric_init( void ) {
-    umm_metrics.freeBlocks = UMM_NUMBLOCKS - 2;
-    umm_metrics.freeBlocksSquared = umm_metrics.freeBlocks * umm_metrics.freeBlocks;
-}
-
-static void umm_fragmentation_metric_add( uint16_t c ) {
-    uint16_t blocks = (UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) - c;
-    DBGLOG_DEBUG( "Add block %i size %i to free metric\n", c, blocks);
-    umm_metrics.freeBlocks += blocks;
-    umm_metrics.freeBlocksSquared += (blocks * blocks);
-}
-
-static void umm_fragmentation_metric_remove( uint16_t c ) {
-    uint16_t blocks = (UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) - c;
-    DBGLOG_DEBUG( "Remove block %i size %i from free metric\n", c, blocks);
-    umm_metrics.freeBlocks -= blocks;
-    umm_metrics.freeBlocksSquared -= (blocks * blocks);
-}
-
-int umm_fragmentation_metric_freeblocks( void ) {
-    return umm_metrics.freeBlocks;
-}
-
-int umm_fragmentation_metric( void ) {
-  DBGLOG_DEBUG( "freeBlocks %i freeBlocksSquared %i\n", umm_metrics.freeBlocks, umm_metrics.freeBlocksSquared);
-  if (0 == umm_metrics.freeBlocks) {
-      return 0;
-  } else {
-      return (100 - (((uint32_t)(sqrtf(umm_metrics.freeBlocksSquared)) * 100)/(umm_metrics.freeBlocks)));
-  }
-}
-
-#else
-  #define umm_fragmentation_metric_init()
-  #define umm_fragmentation_metric_add(c)
-  #define umm_fragmentation_metric_remove(c)
-#endif // UMM_METRICS
 
 /* ------------------------------------------------------------------------
  * The umm_assimilate_up() function does not assume that UMM_NBLOCK(c)
