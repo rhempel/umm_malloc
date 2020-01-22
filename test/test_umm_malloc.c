@@ -1002,6 +1002,7 @@ TEST_TEAR_DOWN(Metrics)
 
 TEST(Metrics, Empty)
 {
+    TEST_ASSERT_EQUAL (0, umm_fragmentation_metric());
     umm_info(0, false);
     TEST_ASSERT_EQUAL (0, umm_fragmentation_metric());
 }
@@ -1016,6 +1017,7 @@ TEST(Metrics, Full)
   for( i=0; i<(UMM_LASTBLOCK-1); ++i )
     p[i] = umm_malloc(4);
 
+  TEST_ASSERT_EQUAL (0, umm_fragmentation_metric());
   umm_info(0, false);
   TEST_ASSERT_EQUAL (0, umm_fragmentation_metric());
 }
@@ -1033,6 +1035,7 @@ TEST(Metrics, SparseFull)
   for( i=1; i<(UMM_LASTBLOCK); i+=2 )
     umm_free(p[i]);
 
+  TEST_ASSERT_EQUAL (99, umm_fragmentation_metric());
   umm_info(0, false);
   TEST_ASSERT_EQUAL (99, umm_fragmentation_metric());
 }
@@ -1050,6 +1053,7 @@ TEST(Metrics, Sparse7of8)
   for( i=1; i<((UMM_LASTBLOCK*7)/8); i+=2 )
     umm_free(p[i]);
 
+  TEST_ASSERT_EQUAL (78, umm_fragmentation_metric());
   umm_info(0, false);
   TEST_ASSERT_EQUAL (78, umm_fragmentation_metric());
 }
@@ -1067,6 +1071,7 @@ TEST(Metrics, Sparse3of4)
   for( i=1; i<((UMM_LASTBLOCK*3)/4); i+=2 )
     umm_free(p[i]);
 
+  TEST_ASSERT_EQUAL (61, umm_fragmentation_metric());
   umm_info(0, false);
   TEST_ASSERT_EQUAL (61, umm_fragmentation_metric());
 }
@@ -1084,6 +1089,7 @@ TEST(Metrics, Sparse1of2)
   for( i=1; i<((UMM_LASTBLOCK*1)/2); i+=2 )
     umm_free(p[i]);
 
+  TEST_ASSERT_EQUAL (34, umm_fragmentation_metric());
   umm_info(0, false);
   TEST_ASSERT_EQUAL (34, umm_fragmentation_metric());
 }
@@ -1101,6 +1107,7 @@ TEST(Metrics, Sparse1of4)
   for( i=1; i<((UMM_LASTBLOCK*1)/4); i+=2 )
     umm_free(p[i]);
 
+  TEST_ASSERT_EQUAL (15, umm_fragmentation_metric());
   umm_info(0, false);
   TEST_ASSERT_EQUAL (15, umm_fragmentation_metric());
 }
@@ -1118,6 +1125,7 @@ TEST(Metrics, Sparse1of8)
   for( i=1; i<((UMM_LASTBLOCK*1)/8); i+=2 )
     umm_free(p[i]);
 
+  TEST_ASSERT_EQUAL (7, umm_fragmentation_metric());
   umm_info(0, false);
   TEST_ASSERT_EQUAL (7, umm_fragmentation_metric());
 }
@@ -1252,7 +1260,9 @@ static void runAllTests (void)
     RUN_TEST_GROUP(MultiMalloc);
     RUN_TEST_GROUP(Free);
     RUN_TEST_GROUP(Realloc);
+#ifdef UMM_METRICS
     RUN_TEST_GROUP(Metrics);
+#endif
     RUN_TEST_GROUP(Poison);
 }
 

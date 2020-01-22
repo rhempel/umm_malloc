@@ -154,5 +154,39 @@ size_t umm_max_free_block_size( void ) {
   return ummHeapInfo.maxFreeContiguousBlocks * sizeof(umm_block);
 }
 
+#ifdef UMM_METRICS
+static void umm_fragmentation_metric_init( void ) {
+    ummHeapInfo.freeBlocks = UMM_NUMBLOCKS - 2;
+    ummHeapInfo.freeBlocksSquared = ummHeapInfo.freeBlocks * ummHeapInfo.freeBlocks;
+}
+
+static void umm_fragmentation_metric_add( uint16_t c ) {
+    uint16_t blocks = (UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) - c;
+    DBGLOG_DEBUG( "Add block %i size %i to free metric\n", c, blocks);
+    ummHeapInfo.freeBlocks += blocks;
+    ummHeapInfo.freeBlocksSquared += (blocks * blocks);
+}
+
+static void umm_fragmentation_metric_remove( uint16_t c ) {
+    uint16_t blocks = (UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) - c;
+    DBGLOG_DEBUG( "Remove block %i size %i from free metric\n", c, blocks);
+    ummHeapInfo.freeBlocks -= blocks;
+    ummHeapInfo.freeBlocksSquared -= (blocks * blocks);
+}
+
+int umm_fragmentation_metric( void ) {
+  DBGLOG_DEBUG( "freeBlocks %i freeBlocksSquared %i\n", umm_metrics.freeBlocks, ummHeapInfo.freeBlocksSquared);
+  if (0 == ummHeapInfo.freeBlocks) {
+      return 0;
+  } else {
+      return (100 - (((uint32_t)(sqrtf(ummHeapInfo.freeBlocksSquared)) * 100)/(ummHeapInfo.freeBlocks)));
+  }
+}
+#else
+  #define umm_fragmentation_metric_init()
+  #define umm_fragmentation_metric_add(c)
+  #define umm_fragmentation_metric_remove(c)
+#endif // UMM_METRICS
+
 /* ------------------------------------------------------------------------ */
 #endif
