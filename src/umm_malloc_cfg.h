@@ -157,7 +157,7 @@ extern char test_umm_heap[];
    extern void umm_corruption(void);
 #  define UMM_HEAP_CORRUPTION_CB() printf( "Heap Corruption!" )
 #else
-#  define INTEGRITY_CHECK() 0
+#  define INTEGRITY_CHECK() 1
 #endif
 
 /*
@@ -202,7 +202,7 @@ extern char test_umm_heap[];
    bool  umm_poison_check( void );
 #  define POISON_CHECK() umm_poison_check()
 #else
-#  define POISON_CHECK() 0
+#  define POISON_CHECK() 1
 #endif
 
 #endif /* _UMM_MALLOC_CFG_H */
