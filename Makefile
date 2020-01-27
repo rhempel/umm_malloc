@@ -35,7 +35,31 @@ SRCT = $(wildcard $(PATHT)*.c)
 COMPILE=gcc -c
 LINK=gcc
 DEPEND=gcc -MM -MG -MF
-CFLAGS=-I. -I$(PATHU) -I$(PATHX) -I$(PATHS) -I$(PATHI) -DTEST_BUILD
+CFLAGS=-I. -I$(PATHU) -I$(PATHX) -I$(PATHS) -I$(PATHI)
+
+ifdef UMM_FIRST_FIT
+	CFLAGS += -DUMM_FIRST_FIT
+endif
+
+ifdef UMM_TEST_BUILD
+	CFLAGS += -DUMM_TEST_BUILD -DUMM_INFO
+endif
+
+ifdef UMM_INFO
+	CFLAGS += -DUMM_INFO
+endif
+
+ifdef UMM_METRICS
+	CFLAGS += -DUMM_METRICS
+endif
+
+ifdef UMM_INTEGRITY
+	CFLAGS += -DUMM_INTEGRITY
+endif
+
+ifdef UMM_POISON
+	CFLAGS += -DUMM_POISON
+endif
 
 RESULTS = $(patsubst $(PATHT)test_%.c,$(PATHR)test_%.txt,$(SRCT))
 
@@ -77,12 +101,78 @@ clean:
 	$(CLEANUP) $(PATHB)*.$(TARGET_EXTENSION)
 	$(CLEANUP) $(PATHR)*.txt
 
+testoptions:
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1 UMM_METRICS=1 UMM_INTEGRITY=1 UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1 UMM_METRICS=1 UMM_INTEGRITY=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1 UMM_METRICS=1                 UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1 UMM_METRICS=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1               UMM_INTEGRITY=1 UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1               UMM_INTEGRITY=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1                               UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1                 UMM_METRICS=1 UMM_INTEGRITY=1 UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1                 UMM_METRICS=1 UMM_INTEGRITY=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1                 UMM_METRICS=1                 UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1                 UMM_METRICS=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1                               UMM_INTEGRITY=1 UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1                               UMM_INTEGRITY=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1                                               UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1
+	make clean
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1 UMM_METRICS=1 UMM_INTEGRITY=1 UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1 UMM_METRICS=1 UMM_INTEGRITY=1
+	make clean
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1 UMM_METRICS=1                 UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1 UMM_METRICS=1
+	make clean
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1               UMM_INTEGRITY=1 UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1               UMM_INTEGRITY=1 UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1                               UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1                               UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1                            UMM_METRICS=1 UMM_INTEGRITY=1 UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1                            UMM_METRICS=1 UMM_INTEGRITY=1
+	make clean
+	make test UMM_TEST_BUILD=1                            UMM_METRICS=1                 UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1                            UMM_METRICS=1
+	make clean
+	make test UMM_TEST_BUILD=1                                          UMM_INTEGRITY=1 UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1                                          UMM_INTEGRITY=1 UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1                                                          UMM_POISON=1
+	make clean
+	make test UMM_TEST_BUILD=1                                                          UMM_POISON=1
+
 .PRECIOUS: $(PATHB)test_%.$(TARGET_EXTENSION)
 .PRECIOUS: $(PATHD)%.d
 .PRECIOUS: $(PATHO)%.o
-.PRECIOUS: $(PATHR)%.txt
 
 .PHONY: clean
+.PHONY: testoptions
 .PHONY: test
 
 test: $(BUILD_PATHS) $(RESULTS)
