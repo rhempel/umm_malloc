@@ -137,6 +137,21 @@ struct umm_test_functions umm_test_poison = {
 };
 #endif
 
+static uint32_t seed = 0;
+
+static void srand32(uint32_t s)
+{
+    seed = s;
+}
+
+
+static uint32_t rand32(void)
+{
+    seed = (uint32_t)(((uint64_t)1664525 * seed) + 1013904223);
+
+    return seed;
+}
+
 #define UMM_TEST_GETTIME(a) (clock_gettime(CLOCK_REALTIME, &a))
 
 #define UMM_TEST_DIFFTIME(a,b) ((b.tv_sec - a.tv_sec) * (uint64_t)(1000*1000*1000) \
@@ -152,15 +167,15 @@ uint64_t stress_test( int iterations, struct umm_test_functions *f )
 
   struct timespec start, end;
 
-  srand(0);
+  srand32(0);
 
   for( j=0; j<STRESS_TEST_ENTRIES; ++j )
     p[j] = (void *)NULL;
 
   for( i=0; i<iterations; ++i ) {
-    j = rand()%STRESS_TEST_ENTRIES;
+    j = rand32()%STRESS_TEST_ENTRIES;
 
-    switch( rand() % 16 ) {
+    switch( rand32() % 16 ) {
 
       case  0:
       case  1:
@@ -181,7 +196,7 @@ uint64_t stress_test( int iterations, struct umm_test_functions *f )
       case  7:
       case  8:
         {
-          s = rand()%64;
+          s = rand32()%64;
           UMM_TEST_GETTIME(start);
           p[j] = f->umm_test_realloc(p[j], s );
           UMM_TEST_GETTIME(end);
@@ -201,7 +216,7 @@ uint64_t stress_test( int iterations, struct umm_test_functions *f )
       case 11:
       case 12:
         {
-          s = rand()%100;
+          s = rand32()%100;
           UMM_TEST_GETTIME(start);
           p[j] = f->umm_test_realloc(p[j], s );
           UMM_TEST_GETTIME(end);
@@ -219,7 +234,7 @@ uint64_t stress_test( int iterations, struct umm_test_functions *f )
       case 13:
       case 14:
         {
-          s = rand()%200;
+          s = rand32()%200;
           UMM_TEST_GETTIME(start);
           f->umm_test_free(p[j]);
           p[j] = f->umm_test_calloc( 1, s );
@@ -238,7 +253,7 @@ uint64_t stress_test( int iterations, struct umm_test_functions *f )
 
       default:
         {
-          s = rand()%400;
+          s = rand32()%400;
           UMM_TEST_GETTIME(start);
           f->umm_test_free(p[j]);
           p[j] = f->umm_test_malloc( s );
@@ -1000,6 +1015,27 @@ TEST_TEAR_DOWN(Metrics)
     TEST_ASSERT_LESS_OR_EQUAL (1, umm_max_critical_depth);
 }
 
+TEST(Metrics, Random)
+{
+    int p[1000];
+    int i;
+ 
+    for (i=0; i<1000; ++i) {
+        p[i] = 0;
+    }
+
+    srand32(0);
+
+    for (i=0; i<(1000*1000*1000); ++i) {
+       p[rand32()%1000]++;
+    }
+
+    for (i=0; i<1000; ++i) {
+        TEST_ASSERT_LESS_OR_EQUAL(1*1000*1000 + 3600, p[i]);
+        TEST_ASSERT_GREATER_OR_EQUAL(1*1000*1000 - 3600, p[i]);
+    }
+}
+
 TEST(Metrics, Empty)
 {
     TEST_ASSERT_EQUAL (0, umm_fragmentation_metric());
@@ -1132,6 +1168,7 @@ TEST(Metrics, Sparse1of8)
 
 TEST_GROUP_RUNNER(Metrics)
 {
+    RUN_TEST_CASE(Metrics, Random);
     RUN_TEST_CASE(Metrics, Empty);
     RUN_TEST_CASE(Metrics, Full);
     RUN_TEST_CASE(Metrics, SparseFull);
@@ -1186,7 +1223,7 @@ TEST(Poison, Random)
     int i,j;
     size_t s;
 
-    srand(0);
+    srand32(0);
 
     for (i=0; i<100; ++i)
        p[i] = (void *)NULL;
