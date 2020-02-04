@@ -49,8 +49,8 @@ ifdef UMM_INFO
 	CFLAGS += -DUMM_INFO
 endif
 
-ifdef UMM_METRICS
-	CFLAGS += -DUMM_METRICS
+ifdef UMM_INLINE_METRICS
+	CFLAGS += -DUMM_INLINE_METRICS
 endif
 
 ifdef UMM_INTEGRITY
@@ -103,69 +103,73 @@ clean:
 
 testoptions:
 	make clean
-	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1 UMM_METRICS=1 UMM_INTEGRITY=1 UMM_POISON=1
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1 UMM_INLINE_METRICS=1 UMM_INTEGRITY=1 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1 UMM_METRICS=1 UMM_INTEGRITY=1
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1 UMM_INLINE_METRICS=1 UMM_INTEGRITY=1
 	make clean
-	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1 UMM_METRICS=1                 UMM_POISON=1
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1 UMM_INLINE_METRICS=1                 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1 UMM_METRICS=1
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1 UMM_INLINE_METRICS=1
 	make clean
-	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1               UMM_INTEGRITY=1 UMM_POISON=1
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1                      UMM_INTEGRITY=1 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1               UMM_INTEGRITY=1
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1                      UMM_INTEGRITY=1
 	make clean
-	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1                               UMM_POISON=1
+	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1                                      UMM_POISON=1
 	make clean
 	make test UMM_TEST_BUILD=1 UMM_INFO=1 UMM_FIRST_FIT=1
 	make clean
-	make test UMM_TEST_BUILD=1 UMM_INFO=1                 UMM_METRICS=1 UMM_INTEGRITY=1 UMM_POISON=1
+	make test UMM_TEST_BUILD=1 UMM_INFO=1                 UMM_INLINE_METRICS=1 UMM_INTEGRITY=1 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1 UMM_INFO=1                 UMM_METRICS=1 UMM_INTEGRITY=1
+	make test UMM_TEST_BUILD=1 UMM_INFO=1                 UMM_INLINE_METRICS=1 UMM_INTEGRITY=1
 	make clean
-	make test UMM_TEST_BUILD=1 UMM_INFO=1                 UMM_METRICS=1                 UMM_POISON=1
+	make test UMM_TEST_BUILD=1 UMM_INFO=1                 UMM_INLINE_METRICS=1                 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1 UMM_INFO=1                 UMM_METRICS=1
+	make test UMM_TEST_BUILD=1 UMM_INFO=1                 UMM_INLINE_METRICS=1
 	make clean
-	make test UMM_TEST_BUILD=1 UMM_INFO=1                               UMM_INTEGRITY=1 UMM_POISON=1
+	make test UMM_TEST_BUILD=1 UMM_INFO=1                                      UMM_INTEGRITY=1 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1 UMM_INFO=1                               UMM_INTEGRITY=1
+	make test UMM_TEST_BUILD=1 UMM_INFO=1                                      UMM_INTEGRITY=1
 	make clean
-	make test UMM_TEST_BUILD=1 UMM_INFO=1                                               UMM_POISON=1
+	make test UMM_TEST_BUILD=1 UMM_INFO=1                                                      UMM_POISON=1
 	make clean
 	make test UMM_TEST_BUILD=1 UMM_INFO=1
 	make clean
-	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1 UMM_METRICS=1 UMM_INTEGRITY=1 UMM_POISON=1
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1 UMM_INLINE_METRICS=1 UMM_INTEGRITY=1 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1 UMM_METRICS=1 UMM_INTEGRITY=1
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1 UMM_INLINE_METRICS=1 UMM_INTEGRITY=1
 	make clean
-	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1 UMM_METRICS=1                 UMM_POISON=1
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1 UMM_INLINE_METRICS=1                 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1 UMM_METRICS=1
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1 UMM_INLINE_METRICS=1
 	make clean
-	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1               UMM_INTEGRITY=1 UMM_POISON=1
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1                      UMM_INTEGRITY=1 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1               UMM_INTEGRITY=1 UMM_POISON=1
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1                      UMM_INTEGRITY=1 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1                               UMM_POISON=1
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1                                      UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1                               UMM_POISON=1
+	make test UMM_TEST_BUILD=1            UMM_FIRST_FIT=1                                      UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1                            UMM_METRICS=1 UMM_INTEGRITY=1 UMM_POISON=1
+	make test UMM_TEST_BUILD=1                            UMM_INLINE_METRICS=1 UMM_INTEGRITY=1 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1                            UMM_METRICS=1 UMM_INTEGRITY=1
+	make test UMM_TEST_BUILD=1                            UMM_INLINE_METRICS=1 UMM_INTEGRITY=1
 	make clean
-	make test UMM_TEST_BUILD=1                            UMM_METRICS=1                 UMM_POISON=1
+	make test UMM_TEST_BUILD=1                            UMM_INLINE_METRICS=1                 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1                            UMM_METRICS=1
+	make test UMM_TEST_BUILD=1                            UMM_INLINE_METRICS=1
 	make clean
-	make test UMM_TEST_BUILD=1                                          UMM_INTEGRITY=1 UMM_POISON=1
+	make test UMM_TEST_BUILD=1                                                 UMM_INTEGRITY=1 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1                                          UMM_INTEGRITY=1 UMM_POISON=1
+	make test UMM_TEST_BUILD=1                                                 UMM_INTEGRITY=1 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1                                                          UMM_POISON=1
+	make test UMM_TEST_BUILD=1                                                                 UMM_POISON=1
 	make clean
-	make test UMM_TEST_BUILD=1                                                          UMM_POISON=1
+	make test UMM_TEST_BUILD=1                                                                 UMM_POISON=1
+
+testbaseline:
+	make clean
+	make test UMM_TEST_BUILD=1 UMM_INFO=1
 
 .PRECIOUS: $(PATHB)test_%.$(TARGET_EXTENSION)
 .PRECIOUS: $(PATHD)%.d
@@ -173,6 +177,7 @@ testoptions:
 
 .PHONY: clean
 .PHONY: testoptions
+.PHONY: testbaseline
 .PHONY: test
 
 test: $(BUILD_PATHS) $(RESULTS)

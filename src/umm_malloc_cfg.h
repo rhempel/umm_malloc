@@ -20,41 +20,43 @@
  * then this file handles all the configuration automagically and warns if
  * there is an incompatible configuration.
  *
- * UMM_TEST_BUILD : Set this if you want to compile in the test suite
+ * UMM_TEST_BUILD
  *
- * UMM_BEST_FIT (default) :  Set this if you want to use a best-fit
- *                           algorithm for allocating new blocks.
+ * Set this if you want to compile in the test suite
  *
- *                           On by default, turned off by UMM_FIRST_FIT
+ * UMM_BEST_FIT (default)
  *
- * UMM_FIRST_FIT : Set this if you want to use a first-fit algorithm
- *                 for allocating new blocks. Faster than UMM_BEST_FIT
- *                 but can result in higher fragmentation.
+ * Set this if you want to use a best-fit algorithm for allocating new blocks.
+ * On by default, turned off by UMM_FIRST_FIT
  *
- * UMM_INFO : Set if you want the ability to calculate metrics on demand
+ * UMM_FIRST_FIT
  *
- * UMM_METRICS : Set this if you want to have access to a minimal set
- *               of heap metrics that can be used to gauge heap health.
+ * Set this if you want to use a first-fit algorithm for allocating new blocks.
+ * Faster than UMM_BEST_FIT but can result in higher fragmentation.
  *
- *               Setting this at compile time will automatically set
- *               UMM_INFO
+ * UMM_INFO
  *
- *               Note that enabling this define will add a slight
- *               runtime penalty.
+ * Set if you want the ability to calculate metrics on demand
  *
- * UMM_INTEGRITY_CHECK : Set if you want to be able to verify that the
- *                       heap is semantically correct before or after
- *                       any heap operation - all of the block indexes
- *                       in the heap make sense.
+ * UMM_INLINE_METRICS
  *
- *                       Slows execution dramatically but catches errors
- *                       really quickly.
+ * Set this if you want to have access to a minimal set of heap metrics that
+ * can be used to gauge heap health.
+ * Setting this at compile time will automatically set UMM_INFO.
+ * Note that enabling this define will add a slight runtime penalty.
  *
- * UMM_POISON_CHECK : Set if you want to be able to leave a poison buffer
- *                    around each allocation. Note this uses an extra
- *                    8 bytes per allocatioon, but you get the benefit of
- *                    being able to detect if your program is writing past
- *                    an allocated buffer.
+ * UMM_INTEGRITY_CHECK
+ *
+ * Set if you want to be able to verify that the heap is semantically correct
+ * before or after any heap operation - all of the block indexes in the heap
+ * make sense.
+ * Slows execution dramatically but catches errors really quickly.
+ *
+ * UMM_POISON_CHECK
+ *
+ * Set if you want to be able to leave a poison buffer around each allocation.
+ * Note this uses an extra 8 bytes per allocation, but you get the benefit of
+ * being able to detect if your program is writing past an allocated buffer.
  *
  * UMM_DBG_LOG_LEVEL=n
  *
@@ -97,14 +99,15 @@ extern char test_umm_heap[];
 
 /* -------------------------------------------------------------------------- */
 
-#ifdef UMM_METRICS
-  extern int umm_fragmentation_metric( void );
+#ifdef UMM_INLINE_METRICS
+  #define UMM_FRAGMENTATION_METRIC_INIT() umm_fragmentation_metric_init()
+  #define UMM_FRAGMENTATION_METRIC_ADD(c) umm_fragmentation_metric_add(c)
+  #define UMM_FRAGMENTATION_METRIC_REMOVE(c) umm_fragmentation_metric_remove(c)
 #else
-  #define umm_fragmentation_metric_init()
-  #define umm_fragmentation_metric_add(c)
-  #define umm_fragmentation_metric_remove(c)
-  #define umm_fragmentation_metric() (0)
-#endif // UMM_METRICS
+  #define UMM_FRAGMENTATION_METRIC_INIT()
+  #define UMM_FRAGMENTATION_METRIC_ADD(c)
+  #define UMM_FRAGMENTATION_METRIC_REMOVE(c)
+#endif // UMM_INLINE_METRICS
 
 /* -------------------------------------------------------------------------- */
 
@@ -128,11 +131,13 @@ extern char test_umm_heap[];
   extern void *umm_info( void *ptr, bool force );
   extern size_t umm_free_heap_size( void );
   extern size_t umm_max_free_block_size( void );
-  extern unsigned int umm_in_use_metric( void );
+  extern int umm_usage_metric( void );
+  extern int umm_fragmentation_metric( void );
 #else
   #define umm_info(p,b)
   #define umm_free_heap_size() (0)
   #define umm_max_free_block_size() (0)
+  #define umm_fragmentation_metric() (0)
   #define umm_in_use_metric() (0)
 #endif
 
