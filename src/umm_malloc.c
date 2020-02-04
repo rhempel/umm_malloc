@@ -31,6 +31,7 @@
  * R.Hempel 2020-01-07 - Add support for Fragmentation metric - See Issue 14
  * R.Hempel 2020-01-12 - Use explicitly sized values from stdint.h - See Issue 15
  * R.Hempel 2020-01-20 - Move metric functions back to umm_info - See Issue 29
+ * R.Hempel 2020-02-01 - Macro functions are uppercased - See Issue 34
  * ----------------------------------------------------------------------------
  */
 
@@ -166,7 +167,7 @@ static void umm_assimilate_up( uint16_t c ) {
 
   if( UMM_NBLOCK(UMM_NBLOCK(c)) & UMM_FREELIST_MASK ) {
 
-    umm_fragmentation_metric_remove( UMM_NBLOCK(c) );
+    UMM_FRAGMENTATION_METRIC_REMOVE( UMM_NBLOCK(c) );
 
     /*
      * The next block is a free block, so assimilate up and remove it from
@@ -197,7 +198,7 @@ static uint16_t umm_assimilate_down( uint16_t c, uint16_t freemask ) {
   // We are going to assimilate down to the previous block because
   // it was free, so remove it from the fragmentation metric
 
-  umm_fragmentation_metric_remove(UMM_PBLOCK(c));
+  UMM_FRAGMENTATION_METRIC_REMOVE(UMM_PBLOCK(c));
 
   UMM_NBLOCK(UMM_PBLOCK(c)) = UMM_NBLOCK(c) | freemask;
   UMM_PBLOCK(UMM_NBLOCK(c)) = UMM_PBLOCK(c);
@@ -209,7 +210,7 @@ static uint16_t umm_assimilate_down( uint16_t c, uint16_t freemask ) {
       // when UMM_INFO is not defined, so don't worry about
       // guarding it.
 
-      umm_fragmentation_metric_add(UMM_PBLOCK(c));
+      UMM_FRAGMENTATION_METRIC_ADD(UMM_PBLOCK(c));
   }
 
   return( UMM_PBLOCK(c) );
@@ -225,7 +226,7 @@ void umm_init( void ) {
 
   /* setup initial blank heap structure */
   {
-    umm_fragmentation_metric_init();
+    UMM_FRAGMENTATION_METRIC_INIT();
 
     /* index of the 0th `umm_block` */
     const uint16_t block_0th = 0;
@@ -315,7 +316,7 @@ static void umm_free_core( void *ptr ) {
      * The previous block is not a free block, so add this one to the head
      * of the free list
      */
-    umm_fragmentation_metric_add(c);
+    UMM_FRAGMENTATION_METRIC_ADD(c);
 
     DBGLOG_DEBUG( "Just add to head of free list\n" );
 
@@ -410,7 +411,7 @@ static void *umm_malloc_core( size_t size ) {
 
   if( UMM_NBLOCK(cf) & UMM_BLOCKNO_MASK && blockSize >= blocks ) {
 
-    umm_fragmentation_metric_remove(cf);
+    UMM_FRAGMENTATION_METRIC_REMOVE(cf);
 
     /*
      * This is an existing block in the memory heap, we just need to split off
@@ -437,7 +438,7 @@ static void *umm_malloc_core( size_t size ) {
        */
       umm_split_block( cf, blocks, UMM_FREELIST_MASK /*new block is free*/ );
 
-      umm_fragmentation_metric_add(UMM_NBLOCK(cf));
+      UMM_FRAGMENTATION_METRIC_ADD(UMM_NBLOCK(cf));
 
       /*
        * `umm_split_block()` does not update the free pointers (it affects
