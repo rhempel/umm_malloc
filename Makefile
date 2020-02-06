@@ -61,6 +61,9 @@ ifdef UMM_POISON
 	CFLAGS += -DUMM_POISON
 endif
 
+.PHONY: default
+default: testbaseline
+
 RESULTS = $(patsubst $(PATHT)test_%.c,$(PATHR)test_%.txt,$(SRCT))
 
 $(PATHR)%.txt: $(PATHB)%.$(TARGET_EXTENSION)
