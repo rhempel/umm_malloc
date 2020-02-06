@@ -74,7 +74,8 @@ UMM_H_ATTPACKPRE typedef struct umm_block_t {
 umm_block *umm_heap = NULL;
 uint16_t umm_numblocks = 0;
 
-#define UMM_NUMBLOCKS (umm_numblocks)
+#define UMM_NUMBLOCKS  (umm_numblocks)
+#define UMM_BLOCK_LAST (UMM_NUMBLOCKS - 1)
 
 /* ------------------------------------------------------------------------ */
 
@@ -225,55 +226,43 @@ void umm_init( void ) {
   memset(umm_heap, 0x00, UMM_MALLOC_CFG_HEAP_SIZE);
 
   /* setup initial blank heap structure */
-  {
     UMM_FRAGMENTATION_METRIC_INIT();
 
-    /* index of the 0th `umm_block` */
-    const uint16_t block_0th = 0;
-    /* index of the 1st `umm_block` */
-    const uint16_t block_1th = 1;
-    /* index of the latest `umm_block` */
-    const uint16_t block_last = UMM_NUMBLOCKS - 1;
-
-    /* setup the 0th `umm_block`, which just points to the 1st */
-    UMM_NBLOCK(block_0th) = block_1th;
-    UMM_NFREE(block_0th)  = block_1th;
-    UMM_PFREE(block_0th)  = block_1th;
+    /* Set up umm_block[0], which just points to umm_block[1] */
+    UMM_NBLOCK(0) = 1;
+    UMM_NFREE(0)  = 1;
+    UMM_PFREE(0)  = 1;
 
     /*
      * Now, we need to set the whole heap space as a huge free block. We should
-     * not touch the 0th `umm_block`, since it's special: the 0th `umm_block`
-     * is the head of the free block list. It's a part of the heap invariant.
+     * not touch umm_block[0], since it's special: umm_block[0] is the head of
+     * the free block list. It's a part of the heap invariant.
      *
      * See the detailed explanation at the beginning of the file.
-     */
-
-    /*
-     * 1th `umm_block` has pointers:
      *
-     * - next `umm_block`: the latest one
-     * - prev `umm_block`: the 0th
+     * umm_block[1] has pointers:
+     *
+     * - next `umm_block`: the last one umm_block[n]
+     * - prev `umm_block`: umm_block[0]
      *
      * Plus, it's a free `umm_block`, so we need to apply `UMM_FREELIST_MASK`
      *
-     * And it's the last free block, so the next free block is 0.
+     * And it's the last free block, so the next free block is 0 which marks
+     * the end of the list. The previous block and free block pointer are 0
+     * too, there is no need to initialize these values due to the init code
+     * that memsets the entire umm_ space to 0.
      */
-    UMM_NBLOCK(block_1th) = block_last | UMM_FREELIST_MASK;
-    UMM_NFREE(block_1th)  = 0;
-    UMM_PBLOCK(block_1th) = block_0th;
-    UMM_PFREE(block_1th)  = block_0th;
+    UMM_NBLOCK(1) = UMM_BLOCK_LAST | UMM_FREELIST_MASK;
 
     /*
-     * latest `umm_block` has pointers:
+     * Last umm_block[n] has the next block index at 0, meaning it's
+     * the end of the list, and the previous block is umm_block[1].
      *
-     * - next `umm_block`: 0 (meaning, there are no more `umm_blocks`)
-     * - prev `umm_block`: the 1st
-     *
-     * It's not a free block, so we don't touch NFREE / PFREE at all.
+     * The last block is a special block and can never be part of the
+     * free list, so its pointers are left at 0 too.
      */
-    UMM_NBLOCK(block_last) = 0;
-    UMM_PBLOCK(block_last) = block_1th;
-  }
+
+    UMM_PBLOCK(UMM_BLOCK_LAST) = 1;
 }
 
 /* ------------------------------------------------------------------------
