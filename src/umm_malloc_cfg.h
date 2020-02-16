@@ -72,14 +72,6 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifdef UMM_TEST_BUILD
-extern char test_umm_heap[];
-
-/* Start addresses and the size of the heap */
-#define UMM_MALLOC_CFG_HEAP_ADDR (test_umm_heap)
-#define UMM_MALLOC_CFG_HEAP_SIZE (0x10000)
-#endif
-
 /* A couple of macros to make packing structures less compiler dependent */
 
 #define UMM_H_ATTPACKPRE
@@ -218,11 +210,11 @@ extern char test_umm_heap[];
    #define UMM_POISON_SIZE_AFTER (4)
    #define UMM_POISONED_BLOCK_LEN_TYPE uint16_t
 
-   void *umm_poison_malloc( size_t size );
-   void *umm_poison_calloc( size_t num, size_t size );
-   void *umm_poison_realloc( void *ptr, size_t size );
-   void  umm_poison_free( void *ptr );
-   bool  umm_poison_check( void );
+   extern void *umm_poison_malloc( size_t size );
+   extern void *umm_poison_calloc( size_t num, size_t size );
+   extern void *umm_poison_realloc( void *ptr, size_t size );
+   extern void  umm_poison_free( void *ptr );
+   extern bool  umm_poison_check( void );
 
    #define POISON_CHECK() umm_poison_check()
 #else

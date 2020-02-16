@@ -48,6 +48,9 @@
 
 #include "dbglog/dbglog.h"
 
+extern void *UMM_MALLOC_CFG_HEAP_ADDR;
+extern uint32_t UMM_MALLOC_CFG_HEAP_SIZE;
+
 /* ------------------------------------------------------------------------- */
 
 UMM_H_ATTPACKPRE typedef struct umm_ptr_t {
