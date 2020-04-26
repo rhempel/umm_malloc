@@ -8,6 +8,8 @@
 #ifndef UMM_MALLOC_H
 #define UMM_MALLOC_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

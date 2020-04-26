@@ -8,6 +8,8 @@
 #ifndef _UMM_MALLOC_CFG_H
 #define _UMM_MALLOC_CFG_H
 
+#include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 /*

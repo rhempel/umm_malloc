@@ -1,7 +1,9 @@
 #ifdef UMM_INFO
 
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
+
 #include <math.h>
 
 /* ----------------------------------------------------------------------------

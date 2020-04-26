@@ -2,6 +2,10 @@
 #if defined(UMM_POISON_CHECK)
 #define POISON_BYTE (0xa5)
 
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+
 /*
  * Yields a size of the poison for the block of size `s`.
  * If `s` is 0, returns 0.

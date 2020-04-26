@@ -44,8 +44,20 @@ in umm_malloc.
 
 ## Usage
 
-Copy the `umm_malloc_cfg_example.h` file to `umm_malloc_cfg.h` and
-make the changes required to support your application.
+This library is designed to be included in your application as you
+see fit - but it's easiest if you do NOT touch the `umm_malloc_cfg.h`
+file and use the `-D` directive in your compiler to configure the
+library for different modes. Read the notes in `umm_malloc_cfg.h` for
+details.
+
+Note that `umm_malloc` is also designed to be testable in standalone
+mode using `ceedling`. To run the test suite, just make sure you have
+`ceedling` installed and then run:
+
+```
+ceedling clean
+ceedling test:all
+```
 
 The following `#define`s must be set to something useful for the
 library to work at all
