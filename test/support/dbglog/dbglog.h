@@ -67,6 +67,8 @@
 #  define DBGLOG_FUNCTION fprintf
 #endif
 
+#define DBGLOG_32_BIT_PTR(x) ((uint32_t)(((uintptr_t)(x)) & 0xffffffff))
+
 /* ------------------------------------------------------------------------- */
 
 #if DBGLOG_LEVEL >= 6

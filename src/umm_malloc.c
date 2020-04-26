@@ -69,8 +69,8 @@ UMM_H_ATTPACKPRE typedef struct umm_block_t {
   } body;
 } UMM_H_ATTPACKSUF umm_block;
 
-#define UMM_FREELIST_MASK (0x8000)
-#define UMM_BLOCKNO_MASK  (0x7FFF)
+#define UMM_FREELIST_MASK ((uint16_t)(0x8000))
+#define UMM_BLOCKNO_MASK  ((uint16_t)(0x7FFF))
 
 /* ------------------------------------------------------------------------- */
 
@@ -80,15 +80,21 @@ uint16_t umm_numblocks = 0;
 #define UMM_NUMBLOCKS  (umm_numblocks)
 #define UMM_BLOCK_LAST (UMM_NUMBLOCKS - 1)
 
-/* ------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------
+ * These macros evaluate to the address of the block and data respectively
+ */
 
 #define UMM_BLOCK(b)  (umm_heap[b])
+#define UMM_DATA(b)   (UMM_BLOCK(b).body.data)
+
+/* -------------------------------------------------------------------------
+ * These macros evaluate to the index of the block - NOT the address!!!
+ */
 
 #define UMM_NBLOCK(b) (UMM_BLOCK(b).header.used.next)
 #define UMM_PBLOCK(b) (UMM_BLOCK(b).header.used.prev)
 #define UMM_NFREE(b)  (UMM_BLOCK(b).body.free.next)
 #define UMM_PFREE(b)  (UMM_BLOCK(b).body.free.prev)
-#define UMM_DATA(b)   (UMM_BLOCK(b).body.data)
 
 /* -------------------------------------------------------------------------
  * There are additional files that may be included here - normally it's

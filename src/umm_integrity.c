@@ -43,8 +43,8 @@ bool umm_integrity_check(void) {
     /* Check that next free block number is valid */
     if (cur >= UMM_NUMBLOCKS) {
       printf("heap integrity broken: too large next free num: %d "
-          "(in block %d, addr 0x%lx)\n", cur, prev,
-          (void *)&UMM_NBLOCK(prev));
+          "(in block %d, addr 0x%08x)\n", cur, prev,
+          DBGLOG_32_BIT_PTR(&UMM_NBLOCK(prev)));
       ok = false;
       goto clean;
     }
@@ -75,8 +75,8 @@ bool umm_integrity_check(void) {
     /* Check that next block number is valid */
     if (cur >= UMM_NUMBLOCKS) {
       printf("heap integrity broken: too large next block num: %d "
-          "(in block %d, addr 0x%lx)\n", cur, prev,
-          (void *)&UMM_NBLOCK(prev));
+          "(in block %d, addr 0x%08x)\n", cur, prev,
+          DBGLOG_32_BIT_PTR(&UMM_NBLOCK(prev)));
       ok = false;
       goto clean;
     }
@@ -89,11 +89,10 @@ bool umm_integrity_check(void) {
     if ((UMM_NBLOCK(cur) & UMM_FREELIST_MASK)
         != (UMM_PBLOCK(cur) & UMM_FREELIST_MASK))
     {
-      printf("heap integrity broken: mask wrong at addr 0x%lx: n=0x%x, p=0x%x\n",
-          (void *)&UMM_NBLOCK(cur),
+      printf("heap integrity broken: mask wrong at addr 0x%08x: n=0x%x, p=0x%x\n",
+          DBGLOG_32_BIT_PTR(&UMM_NBLOCK(cur)),
           (UMM_NBLOCK(cur) & UMM_FREELIST_MASK),
-          (UMM_PBLOCK(cur) & UMM_FREELIST_MASK)
-          );
+          (UMM_PBLOCK(cur) & UMM_FREELIST_MASK));
       ok = false;
       goto clean;
     }
@@ -101,8 +100,8 @@ bool umm_integrity_check(void) {
     /* make sure the block list is sequential */
     if (cur <= prev ) {
      printf("heap integrity broken: next block %d is before prev this one "
-          "(in block %d, addr 0x%lx)\n", cur, prev,
-          (void *)&UMM_NBLOCK(prev));
+          "(in block %d, addr 0x%08x)\n", cur, prev,
+          DBGLOG_32_BIT_PTR(&UMM_NBLOCK(prev)));
       ok = false;
       goto clean;
     }

@@ -40,7 +40,7 @@ void *umm_info( void *ptr, bool force ) {
   DBGLOG_FORCE( force, "\n" );
   DBGLOG_FORCE( force, "+----------+-------+--------+--------+-------+--------+--------+\n" );
   DBGLOG_FORCE( force, "|0x%08x|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
-      (void *)(&UMM_BLOCK(blockNo)),
+      DBGLOG_32_BIT_PTR(&UMM_BLOCK(blockNo)),
       blockNo,
       UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK,
       UMM_PBLOCK(blockNo),
@@ -74,7 +74,7 @@ void *umm_info( void *ptr, bool force ) {
       }
 
       DBGLOG_FORCE( force, "|0x%08x|B %5i|NB %5i|PB %5i|Z %5u|NF %5i|PF %5i|\n",
-          (void *)(&UMM_BLOCK(blockNo)),
+          DBGLOG_32_BIT_PTR(&UMM_BLOCK(blockNo)),
           blockNo,
           UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK,
           UMM_PBLOCK(blockNo),
@@ -96,7 +96,7 @@ void *umm_info( void *ptr, bool force ) {
       ummHeapInfo.usedBlocks += curBlocks;
 
       DBGLOG_FORCE( force, "|0x%08x|B %5i|NB %5i|PB %5i|Z %5u|\n",
-          (void *)(&UMM_BLOCK(blockNo)),
+          DBGLOG_32_BIT_PTR(&UMM_BLOCK(blockNo)),
           blockNo,
           UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK,
           UMM_PBLOCK(blockNo),
@@ -114,7 +114,7 @@ void *umm_info( void *ptr, bool force ) {
    */
 
   DBGLOG_FORCE( force, "|0x%08x|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
-      (void *)(&UMM_BLOCK(blockNo)),
+      DBGLOG_32_BIT_PTR(&UMM_BLOCK(blockNo)),
       blockNo,
       UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK,
       UMM_PBLOCK(blockNo),
