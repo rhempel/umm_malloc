@@ -164,7 +164,7 @@ void *umm_poison_calloc( size_t num, size_t item_size ) {
   size += poison_size(size);
 
   ret = umm_malloc(size);
-  
+
   if (NULL != ret)
       memset(ret, 0x00, size);
 
@@ -205,7 +205,7 @@ void umm_poison_free( void *ptr ) {
 bool umm_poison_check(void) {
   bool ok = true;
   unsigned short int cur;
-    
+
   if (umm_heap == NULL) {
     umm_init();
   }
@@ -227,8 +227,7 @@ bool umm_poison_check(void) {
 
   return ok;
 }
- 
+
 /* ------------------------------------------------------------------------ */
 
 #endif
-
