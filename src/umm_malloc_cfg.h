@@ -128,6 +128,9 @@
   #define UMM_FRAGMENTATION_METRIC_INIT() umm_fragmentation_metric_init()
   #define UMM_FRAGMENTATION_METRIC_ADD(c) umm_fragmentation_metric_add(c)
   #define UMM_FRAGMENTATION_METRIC_REMOVE(c) umm_fragmentation_metric_remove(c)
+  #ifndef UMM_INFO
+  #define UMM_INFO
+  #endif
 #else
   #define UMM_FRAGMENTATION_METRIC_INIT()
   #define UMM_FRAGMENTATION_METRIC_ADD(c)
@@ -162,8 +165,8 @@
   #define umm_info(p,b)
   #define umm_free_heap_size() (0)
   #define umm_max_free_block_size() (0)
+  #define umm_usage_metric() (0)
   #define umm_fragmentation_metric() (0)
-  #define umm_in_use_metric() (0)
 #endif
 
 /*

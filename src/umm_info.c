@@ -152,7 +152,9 @@ void *umm_info( void *ptr, bool force ) {
 /* ------------------------------------------------------------------------ */
 
 size_t umm_free_heap_size( void ) {
+#ifndef UMM_INLINE_METRICS
   umm_info(NULL, false);
+#endif
   return (size_t)ummHeapInfo.freeBlocks * sizeof(umm_block);
 }
 
@@ -162,13 +164,21 @@ size_t umm_max_free_block_size( void ) {
 }
 
 int umm_usage_metric( void ) {
-  DBGLOG_DEBUG( "usedBlocks %i totalBlocks %i\n", ummHeapInfo.usedBlocks, ummHeapInfo.totalBlocks);
+#ifndef UMM_INLINE_METRICS
+  umm_info(NULL, false);
+#endif
+  DBGLOG_DEBUG( "usedBlocks %i totalBlocks %i\n", umm_metrics.usedBlocks, ummHeapInfo.totalBlocks);
+  if (ummHeapInfo.freeBlocks)
+    return (int)((ummHeapInfo.usedBlocks * 100)/(ummHeapInfo.freeBlocks));
 
-  return (int)((ummHeapInfo.usedBlocks * 100)/(ummHeapInfo.freeBlocks));
+  return -1;  // no freeBlocks
 }
 
 int umm_fragmentation_metric( void ) {
-  DBGLOG_DEBUG( "freeBlocks %i freeBlocksSquared %i\n", ummHeapInfo.freeBlocks, ummHeapInfo.freeBlocksSquared);
+#ifndef UMM_INLINE_METRICS
+  umm_info(NULL, false);
+#endif
+  DBGLOG_DEBUG( "freeBlocks %i freeBlocksSquared %i\n", umm_metrics.freeBlocks, ummHeapInfo.freeBlocksSquared);
   if (0 == ummHeapInfo.freeBlocks) {
       return 0;
   } else {
