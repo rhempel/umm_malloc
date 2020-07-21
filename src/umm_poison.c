@@ -126,7 +126,7 @@ static void *get_poisoned( void *ptr, size_t size_w_poison ) {
  */
 static void *get_unpoisoned( void *ptr ) {
   if (ptr != NULL) {
-    uint8_t c;
+    uint16_t c;
 
     ptr -= (sizeof(UMM_POISONED_BLOCK_LEN_TYPE) + UMM_POISON_SIZE_BEFORE);
 

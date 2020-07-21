@@ -162,13 +162,13 @@ size_t umm_max_free_block_size( void ) {
 }
 
 int umm_usage_metric( void ) {
-  DBGLOG_DEBUG( "usedBlocks %i totalBlocks %i\n", umm_metrics.usedBlocks, ummHeapInfo.totalBlocks);
+  DBGLOG_DEBUG( "usedBlocks %i totalBlocks %i\n", ummHeapInfo.usedBlocks, ummHeapInfo.totalBlocks);
 
   return (int)((ummHeapInfo.usedBlocks * 100)/(ummHeapInfo.freeBlocks));
 }
 
 int umm_fragmentation_metric( void ) {
-  DBGLOG_DEBUG( "freeBlocks %i freeBlocksSquared %i\n", umm_metrics.freeBlocks, ummHeapInfo.freeBlocksSquared);
+  DBGLOG_DEBUG( "freeBlocks %i freeBlocksSquared %i\n", ummHeapInfo.freeBlocks, ummHeapInfo.freeBlocksSquared);
   if (0 == ummHeapInfo.freeBlocks) {
       return 0;
   } else {
