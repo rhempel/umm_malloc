@@ -26,6 +26,21 @@
  *
  * Set this if you want to compile in the test suite
  *
+ * UMM_BLOCK_BODY_SIZE
+ *
+ * Defines the umm_block[].body size - it is 8 by default
+ *
+ * This assumes umm_ptr is a pair of uint16_t values
+ * which is 4 bytes plus the data[] array which is another 4 bytes
+ * for a total of 8.
+ *
+ * NOTE WELL that the umm_block[].body size must be multiple of
+ *           the natural access size of the host machine to ensure
+ *           that accesses are efficient.
+ *
+ *           We have not verified the checks below for 64 bit machines
+ *           because this library is targeted for 32 bit machines.
+ *
  * UMM_BEST_FIT (default)
  *
  * Set this if you want to use a best-fit algorithm for allocating new blocks.
@@ -78,6 +93,20 @@
 
 #define UMM_H_ATTPACKPRE
 #define UMM_H_ATTPACKSUF __attribute__((__packed__))
+
+/* -------------------------------------------------------------------------- */
+
+#ifndef UMM_BLOCK_BODY_SIZE
+    #define UMM_BLOCK_BODY_SIZE (8)
+#endif
+
+#if (UMM_BLOCK_BODY_SIZE < 8)
+    #error UMM_BLOCK_BODY_SIZE must be at least 8!
+#endif
+
+#if ((UMM_BLOCK_BODY_SIZE % 4) != 0)
+    #error UMM_BLOCK_BODY_SIZE must be multiple of 4!
+#endif
 
 /* -------------------------------------------------------------------------- */
 
@@ -201,6 +230,7 @@
  * NOTE: each allocated buffer is aligned by 4 bytes. But when poisoning is
  * enabled, actual pointer returned to user is shifted by
  * `(sizeof(UMM_POISONED_BLOCK_LEN_TYPE) + UMM_POISON_SIZE_BEFORE)`.
+ *
  * It's your responsibility to make resulting pointers aligned appropriately.
  *
  * If poison corruption is detected, the message is printed and user-provided

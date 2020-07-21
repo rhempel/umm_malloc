@@ -32,6 +32,7 @@
  * R.Hempel 2020-01-12 - Use explicitly sized values from stdint.h - See Issue 15
  * R.Hempel 2020-01-20 - Move metric functions back to umm_info - See Issue 29
  * R.Hempel 2020-02-01 - Macro functions are uppercased - See Issue 34
+ * R.Hempel 2020-06-20 - Support alternate body size - See Issue 42
  * ----------------------------------------------------------------------------
  */
 
@@ -59,14 +60,13 @@ UMM_H_ATTPACKPRE typedef struct umm_ptr_t {
   uint16_t prev;
 } UMM_H_ATTPACKSUF umm_ptr;
 
-
 UMM_H_ATTPACKPRE typedef struct umm_block_t {
   union {
     umm_ptr used;
   } header;
   union {
     umm_ptr free;
-    uint8_t data[4];
+    uint8_t data[UMM_BLOCK_BODY_SIZE - sizeof(struct umm_ptr_t)];
   } body;
 } UMM_H_ATTPACKSUF umm_block;
 
@@ -273,6 +273,10 @@ void umm_init( void ) {
      */
 
     UMM_PBLOCK(UMM_BLOCK_LAST) = 1;
+
+//DBGLOG_FORCE(true, "nblock(0) %04x pblock(0) %04x nfree(0) %04x pfree(0) %04x\n", UMM_NBLOCK(0) & UMM_BLOCKNO_MASK, UMM_PBLOCK(0), UMM_NFREE(0), UMM_PFREE(0));
+//DBGLOG_FORCE(true, "nblock(1) %04x pblock(1) %04x nfree(1) %04x pfree(1) %04x\n", UMM_NBLOCK(1) & UMM_BLOCKNO_MASK, UMM_PBLOCK(1), UMM_NFREE(1), UMM_PFREE(1));
+
 }
 
 /* ------------------------------------------------------------------------

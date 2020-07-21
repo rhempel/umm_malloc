@@ -13,14 +13,8 @@
 /* Start addresses and the size of the heap */
 uint32_t UMM_MALLOC_CFG_HEAP_SIZE = SUPPORT_UMM_MALLOC_HEAP_SIZE;
 
-char test_umm_heap[SUPPORT_UMM_MALLOC_HEAP_SIZE];
+char test_umm_heap[0x2000][UMM_BLOCK_BODY_SIZE];
 void * UMM_MALLOC_CFG_HEAP_ADDR = &test_umm_heap;
-
-// Note, the block size calculation depends on knowledge of the internals
-// of umm_malloc.c which are not to be exposed to the user of the library
-
-#define UMM_BLOCK_SIZE (8)
-#define UMM_LASTBLOCK ((SUPPORT_UMM_MALLOC_HEAP_SIZE-UMM_BLOCK_SIZE)/UMM_BLOCK_SIZE)
 
 int umm_max_critical_depth;
 int umm_critical_depth;
@@ -34,26 +28,36 @@ bool check_all_bytes ( uint8_t * p, size_t s, uint8_t v) {
 	return ( s == 0 );
 }
 
+// Note, the get_xxx() functions depend on knowledge of the internals
+// of umm_malloc.c which are not to be exposed to the user of the library
+//
+// Specifically, the array offsets represent the block indexes
+// within the umm_block_t as follows:
+//
+// 0 - header.used.next (plus free flag)
+// 1 - header.used.prev
+// 2 - body.free.next
+// 3 - body.free.prev
+
 bool get_block_is_free ( int  b ) {
-    return ( (((uint16_t *)((void *)(&(((uint64_t *)test_umm_heap)[b]))))[0] & 0x8000) == 0x8000 );
+    return ( (((uint16_t *)(&test_umm_heap[b]))[0] & 0x8000) == 0x8000 );
 }
 
 uint16_t get_block_next ( int b ) {
-    return ( ((uint16_t *)((void *)(&(((uint64_t *)test_umm_heap)[b]))))[0] & 0x7FFF );
+    return ( ((uint16_t *)(&test_umm_heap[b]))[0] & 0x7FFF );
 }
 
 uint16_t get_block_prev ( int b ) {
-    return ( ((uint16_t *)((void *)(&(((uint64_t *)test_umm_heap)[b]))))[1] );
+    return ( (((uint16_t *)(&test_umm_heap[b]))[1]));
 }
 
 uint16_t get_block_next_free ( int b ) {
-    return ( ((uint16_t *)((void *)(&(((uint64_t *)test_umm_heap)[b]))))[2] );
+    return ( (((uint16_t *)(&test_umm_heap[b]))[2]));
 }
 
 uint16_t get_block_prev_free ( int b ) {
-    return ( ((uint16_t *)((void *)(&(((uint64_t *)test_umm_heap)[b]))))[3] );
+    return ( (((uint16_t *)(&test_umm_heap[b]))[3]));
 }
-
 
 char block_test_msg[TEST_MSG_LEN];
 char block_actual_msg[TEST_MSG_LEN];

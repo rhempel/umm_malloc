@@ -29,11 +29,11 @@ struct block_test_values MultiMallocManySmall_test_values[] =
 
 void testMultiMallocManySmall(void)
 {
-    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[12 +  0], umm_malloc(4));
-    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[12 +  8], umm_malloc(4));
-    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[12 + 16], umm_malloc(4));
-    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[12 + 24], umm_malloc(4));
-    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[12 + 32], umm_malloc(4));
+    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], umm_malloc(4));
+    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[2][UMM_BLOCK_HEADER_SIZE], umm_malloc(4));
+    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[3][UMM_BLOCK_HEADER_SIZE], umm_malloc(4));
+    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[4][UMM_BLOCK_HEADER_SIZE], umm_malloc(4));
+    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[5][UMM_BLOCK_HEADER_SIZE], umm_malloc(4));
 
     TEST_ASSERT_TRUE (check_blocks (MultiMallocManySmall_test_values, ARRAYELEMENTCOUNT(MultiMallocManySmall_test_values)));
 }
@@ -51,11 +51,11 @@ struct block_test_values MultiMallocManyMed_test_values[] =
 
 void testMultiMallocManyMed(void)
 {
-    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[12 +     0], umm_malloc(3996));
-    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[12 +  4000], umm_malloc(3996));
-    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[12 +  8000], umm_malloc(3996));
-    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[12 + 12000], umm_malloc(3996));
-    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[12 + 16000], umm_malloc(3996));
+    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[   1][UMM_BLOCK_HEADER_SIZE], umm_malloc(3996));
+    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[ 501][UMM_BLOCK_HEADER_SIZE], umm_malloc(3996));
+    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[1001][UMM_BLOCK_HEADER_SIZE], umm_malloc(3996));
+    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[1501][UMM_BLOCK_HEADER_SIZE], umm_malloc(3996));
+    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[2001][UMM_BLOCK_HEADER_SIZE], umm_malloc(3996));
 
     TEST_ASSERT_TRUE (check_blocks (MultiMallocManyMed_test_values, ARRAYELEMENTCOUNT(MultiMallocManyMed_test_values)));
 }
@@ -71,10 +71,10 @@ struct block_test_values MultiMallocManyLarge_test_values[] =
 
 void testMultiMallocManyLarge(void)
 {
-    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[12 +     0], umm_malloc(19996));
-    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[12 + 20000], umm_malloc(19996));
-    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[12 + 40000], umm_malloc(19996));
-    TEST_ASSERT_EQUAL_PTR ((void *)NULL                      , umm_malloc(19996));
+    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[   1][UMM_BLOCK_HEADER_SIZE], umm_malloc(19996));
+    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[2501][UMM_BLOCK_HEADER_SIZE], umm_malloc(19996));
+    TEST_ASSERT_EQUAL_PTR ((void *)&test_umm_heap[5001][UMM_BLOCK_HEADER_SIZE], umm_malloc(19996));
+    TEST_ASSERT_EQUAL_PTR ((void *)NULL                                       , umm_malloc(19996));
 
     TEST_ASSERT_TRUE (check_blocks (MultiMallocManyLarge_test_values, ARRAYELEMENTCOUNT(MultiMallocManyLarge_test_values)));
 }

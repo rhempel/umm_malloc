@@ -10,9 +10,11 @@
 
 #include "dbglog/dbglog.h"
 
-// #include <support_umm_heap.h>
+#include <umm_malloc_cfg.h>
 
-extern char test_umm_heap[];
+#define UMM_BLOCK_HEADER_SIZE (4)
+
+extern char test_umm_heap[][UMM_BLOCK_BODY_SIZE];
 extern int umm_max_critical_depth;
 extern int umm_critical_depth;
 
@@ -33,12 +35,15 @@ extern uint32_t rand32(void);
 
 // Note, the block size calculation depends on knowledge of the internals
 // of umm_malloc.c which are not to be exposed to the user of the library
-
-#define SUPPORT_UMM_MALLOC_HEAP_SIZE (0x10000)
-#define UMM_BLOCK_SIZE (8)
-#define UMM_LASTBLOCK ((SUPPORT_UMM_MALLOC_HEAP_SIZE-UMM_BLOCK_SIZE)/UMM_BLOCK_SIZE)
+//
+// We now can configure the block body size - to make the tests pass
+// without changing the ptr indexes we scale the UMM_MALLOC_HEAP_SIZE
+// to the UMM_BLOCK_BODY_SIZE
 
 #define ARRAYELEMENTCOUNT(x) (sizeof (x) / sizeof (x)[0])
+
+#define SUPPORT_UMM_MALLOC_HEAP_SIZE (0x2000*UMM_BLOCK_BODY_SIZE)
+#define UMM_LASTBLOCK ((SUPPORT_UMM_MALLOC_HEAP_SIZE/UMM_BLOCK_BODY_SIZE)-1)
 
 #define TEST_MSG_LEN (132)
 
