@@ -35,7 +35,7 @@ void testHeapFirstMalloc0Bytes(void)
     TEST_ASSERT_TRUE (check_blocks (Initialization_test_values, ARRAYELEMENTCOUNT(Initialization_test_values)));
 }
 
-struct block_test_values MallocMin_test_values[] =
+struct block_test_values MallocFirstBlock_test_values[] =
     { {0            , false, 1            , 0, 2, 2}
     , {1            , false, 2            , 0, 0, 0}
     , {2            , true,  UMM_LASTBLOCK, 1, 0, 0}
@@ -45,85 +45,88 @@ struct block_test_values MallocMin_test_values[] =
 void testHeapFirstMalloc1Bytes(void)
 {
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (1)));
-    TEST_ASSERT_TRUE (check_blocks (MallocMin_test_values, ARRAYELEMENTCOUNT(MallocMin_test_values)));
+    TEST_ASSERT_TRUE (check_blocks (MallocFirstBlock_test_values, ARRAYELEMENTCOUNT(MallocFirstBlock_test_values)));
 }
 
 void testHeapFirstMalloc2Bytes(void)
 {
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (2)));
-    TEST_ASSERT_TRUE (check_blocks (MallocMin_test_values, ARRAYELEMENTCOUNT(MallocMin_test_values)));
+    TEST_ASSERT_TRUE (check_blocks (MallocFirstBlock_test_values, ARRAYELEMENTCOUNT(MallocFirstBlock_test_values)));
 }
 
-void testHeapFirstMalloc3Bytes(void)
+void testHeapMallocFirstBlockBodyMinusOneBytes(void)
 {
-    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (3)));
-    TEST_ASSERT_TRUE (check_blocks (MallocMin_test_values, ARRAYELEMENTCOUNT(MallocMin_test_values)));
+    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE-1)));
+    TEST_ASSERT_TRUE (check_blocks (MallocFirstBlock_test_values, ARRAYELEMENTCOUNT(MallocFirstBlock_test_values)));
 }
 
-void testHeapFirstMalloc4Bytes(void)
+void testHeapMallocFirstBlockBodyBytes(void)
 {
-    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (4)));
-    TEST_ASSERT_TRUE (check_blocks (MallocMin_test_values, ARRAYELEMENTCOUNT(MallocMin_test_values)));
+    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE)));
+    TEST_ASSERT_TRUE (check_blocks (MallocFirstBlock_test_values, ARRAYELEMENTCOUNT(MallocFirstBlock_test_values)));
 }
 
-struct block_test_values MallocSmall_test_values[] =
+struct block_test_values MallocSecondBlock_test_values[] =
     { {0            , false, 1            , 0, 3, 3}
     , {1            , false, 3            , 0, 0, 0}
     , {3            , true,  UMM_LASTBLOCK, 1, 0, 0}
     , {UMM_LASTBLOCK, false, 0            , 3, 0, 0}
     };
 
-void testHeapFirstMalloc5Bytes(void)
+void testHeapMallocFirstBlockBodyPlusOneBytes(void)
 {
-    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (5)));
-    TEST_ASSERT_TRUE (check_blocks (MallocSmall_test_values, ARRAYELEMENTCOUNT(MallocSmall_test_values)));
+    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE+1)));
+    TEST_ASSERT_TRUE (check_blocks (MallocSecondBlock_test_values, ARRAYELEMENTCOUNT(MallocSecondBlock_test_values)));
 }
 
-void testHeapFirstMalloc12Bytes(void)
+void testHeapMallocFirstBlockBodyPlusFullBlockBytes(void)
 {
-    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (12)));
-    TEST_ASSERT_TRUE (check_blocks (MallocSmall_test_values, ARRAYELEMENTCOUNT(MallocSmall_test_values)));
+    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE+UMM_BLOCK_BODY_SIZE)));
+    TEST_ASSERT_TRUE (check_blocks (MallocSecondBlock_test_values, ARRAYELEMENTCOUNT(MallocSecondBlock_test_values)));
 }
 
-struct block_test_values MallocSmallPlus_test_values[] =
+struct block_test_values MallocThirdBlock_test_values[] =
     { {0            , false, 1            , 0, 4, 4}
     , {1            , false, 4            , 0, 0, 0}
     , {4            , true,  UMM_LASTBLOCK, 1, 0, 0}
     , {UMM_LASTBLOCK, false, 0            , 4, 0, 0}
     };
 
-void testHeapFirstMalloc13Bytes(void)
+void testHeapMallocFirstAndSecondBlockBodyPlusOneBytes(void)
 {
-    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (13)));
-    TEST_ASSERT_TRUE (check_blocks (MallocSmallPlus_test_values, ARRAYELEMENTCOUNT(MallocSmallPlus_test_values)));
+    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE+UMM_BLOCK_BODY_SIZE+1)));
+    TEST_ASSERT_TRUE (check_blocks (MallocThirdBlock_test_values, ARRAYELEMENTCOUNT(MallocThirdBlock_test_values)));
 }
 
-struct block_test_values MallocMid_test_values[] =
+struct block_test_values MallocFirstBlockBodyPlus500Blocks_test_values[] =
     { {0            , false, 1            , 0, 502, 502}
     , {1            , false, 502          , 0,   0,   0}
     , {502          , true,  UMM_LASTBLOCK, 1,   0,   0}
     , {UMM_LASTBLOCK, false, 0            , 502, 0,   0}
     };
 
-void testHeapFirstMalloc4000Bytes(void)
+void testHeapMallocFirstBlockBodyPlus500Blocks(void)
 {
-    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (4000)));
-    TEST_ASSERT_TRUE (check_blocks (MallocMid_test_values, ARRAYELEMENTCOUNT(MallocMid_test_values)));
+    // Note that this test will actually allocate 510 blocks as the first
+    // block contains the prev/next pointer pair.
+    //
+    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE+UMM_BLOCK_BODY_SIZE*500)));
+    TEST_ASSERT_TRUE (check_blocks (MallocFirstBlockBodyPlus500Blocks_test_values, ARRAYELEMENTCOUNT(MallocFirstBlockBodyPlus500Blocks_test_values)));
 }
 
-struct block_test_values MallocLarge_test_values[] =
+struct block_test_values MallocAllBlocks_test_values[] =
     { {0             , false, 1            , 0, 0, 0}
     , {1             , false, UMM_LASTBLOCK, 0, 0, 0}
     , {UMM_LASTBLOCK , false, 0            , 1, 0, 0}
     };
 
-void testHeapFirstMalloc65516Bytes(void)
+void testHeapAllBlocks(void)
 {
-    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (65516)));
-    TEST_ASSERT_TRUE (check_blocks (MallocLarge_test_values, ARRAYELEMENTCOUNT(MallocLarge_test_values)));
+    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE+UMM_BLOCK_BODY_SIZE*(SUPPORT_UMM_MALLOC_BLOCKS-3))));
+    TEST_ASSERT_TRUE (check_blocks (MallocAllBlocks_test_values, ARRAYELEMENTCOUNT(MallocAllBlocks_test_values)));
 }
 
-void testHeapFirstMalloc65517Bytes(void)
+void testHeapAllBlocksPlusOneByte(void)
 {
-    TEST_ASSERT_EQUAL_PTR((void *)NULL, (umm_malloc (65517)));
+    TEST_ASSERT_EQUAL_PTR((void *)NULL, (umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE+UMM_BLOCK_BODY_SIZE*(SUPPORT_UMM_MALLOC_BLOCKS-3)+1)));
 }

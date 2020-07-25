@@ -89,6 +89,34 @@ bool check_block (struct block_test_values *t)
         return true;
 }
 
+size_t normalize_allocation_size(size_t s)
+{
+    size_t first_block;
+    size_t full_blocks;
+    size_t extra_bytes;
+
+    // This function normalizes the number of bytes to allocate so that all
+    // the test cases work the same. The original test cases were designed
+    // for the smallest block body size, so we need to calculate:
+    //
+    // 1. If we need only the initial block
+    // 2. Number of additional full blocks
+    // 3. Any extra bytes
+
+    if (s <= (UMM_MIN_BLOCK_BODY_SIZE-UMM_BLOCK_HEADER_SIZE)) {
+        first_block = 0;
+        full_blocks = 0;
+        extra_bytes = s;
+    } else {
+        first_block = 1;
+        full_blocks = ((s-(UMM_MIN_BLOCK_BODY_SIZE-UMM_BLOCK_HEADER_SIZE))/UMM_MIN_BLOCK_BODY_SIZE);
+        extra_bytes= (s-(UMM_MIN_BLOCK_BODY_SIZE-UMM_BLOCK_HEADER_SIZE)-(full_blocks*UMM_MIN_BLOCK_BODY_SIZE));
+    }
+DBGLOG_FORCE( true, "s f b e t: %ld %ld %ld %ld %d\n", s, first_block, full_blocks, extra_bytes, first_block*UMM_FIRST_BLOCK_BODY_SIZE + full_blocks*UMM_BLOCK_BODY_SIZE + extra_bytes);
+
+    return (first_block*UMM_FIRST_BLOCK_BODY_SIZE + full_blocks*UMM_BLOCK_BODY_SIZE + extra_bytes);
+}
+
 bool check_blocks (struct block_test_values *t, size_t n)
 {
     int i;
@@ -180,7 +208,7 @@ uint64_t stress_test( int iterations, struct umm_test_functions *f )
       case  7:
       case  8:
         {
-          s = rand32()%64;
+          s = normalize_allocation_size(rand32()%64);
           UMM_TEST_GETTIME(start);
           p[j] = f->umm_test_realloc(p[j], s );
           UMM_TEST_GETTIME(end);
@@ -200,9 +228,9 @@ uint64_t stress_test( int iterations, struct umm_test_functions *f )
       case 11:
       case 12:
         {
-          s = rand32()%100;
+          s = normalize_allocation_size(rand32()%100);
           UMM_TEST_GETTIME(start);
-          p[j] = f->umm_test_realloc(p[j], s );
+          p[j] = f->umm_test_realloc(p[j], s);
           UMM_TEST_GETTIME(end);
           umm_malloc_time += UMM_TEST_DIFFTIME(start,end);
 
@@ -218,7 +246,7 @@ uint64_t stress_test( int iterations, struct umm_test_functions *f )
       case 13:
       case 14:
         {
-          s = rand32()%200;
+          s = normalize_allocation_size(rand32()%200);
           UMM_TEST_GETTIME(start);
           f->umm_test_free(p[j]);
           p[j] = f->umm_test_calloc( 1, s );
@@ -237,7 +265,7 @@ uint64_t stress_test( int iterations, struct umm_test_functions *f )
 
       default:
         {
-          s = rand32()%400;
+          s = normalize_allocation_size(rand32()%400);
           UMM_TEST_GETTIME(start);
           f->umm_test_free(p[j]);
           p[j] = f->umm_test_malloc( s );

@@ -25,14 +25,14 @@ struct block_test_values ReallocTooBig_test_values[] =
 
 void testReallocTooBig(void)
 {
-    void *foo = umm_malloc (4);
+    void *foo = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
 
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], foo);
     TEST_ASSERT_TRUE (check_blocks (ReallocTooBig_test_values, ARRAYELEMENTCOUNT(ReallocTooBig_test_values)));
 
     // Realloc with a request that is too big should return NULL and leave the original memory untouched.
 
-    TEST_ASSERT_EQUAL_PTR((void *)NULL, (umm_realloc (foo,SUPPORT_UMM_MALLOC_HEAP_SIZE*2)));
+    TEST_ASSERT_EQUAL_PTR((void *)NULL, (umm_realloc (foo,UMM_BLOCK_BODY_SIZE*(SUPPORT_UMM_MALLOC_BLOCKS-2))));
     TEST_ASSERT_TRUE (check_blocks (ReallocTooBig_test_values, ARRAYELEMENTCOUNT(ReallocTooBig_test_values)));
 }
 
@@ -45,14 +45,14 @@ struct block_test_values ReallocSameSize_test_values[] =
 
 void testReallocSameSize(void)
 {
-    void *foo = umm_malloc (2);
+    void *foo = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE/2);
 
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], foo);
     TEST_ASSERT_TRUE (check_blocks (ReallocSameSize_test_values, ARRAYELEMENTCOUNT(ReallocSameSize_test_values)));
 
     // Realloc with a request that is same size or block size should leave the original memory untouched.
 
-    TEST_ASSERT_EQUAL_PTR((void *)foo, (umm_realloc (foo, 2)));
+    TEST_ASSERT_EQUAL_PTR((void *)foo, (umm_realloc (foo, UMM_FIRST_BLOCK_BODY_SIZE/2)));
     TEST_ASSERT_TRUE (check_blocks (ReallocSameSize_test_values, ARRAYELEMENTCOUNT(ReallocSameSize_test_values)));
 
     // Realloc with a request that is same size or block size should leave the original memory untouched.
@@ -62,7 +62,7 @@ void testReallocSameSize(void)
 
     // Realloc with a request that is same size or block size should leave the original memory untouched.
 
-    TEST_ASSERT_EQUAL_PTR((void *)foo, (umm_realloc (foo, 4)));
+    TEST_ASSERT_EQUAL_PTR((void *)foo, (umm_realloc (foo, UMM_FIRST_BLOCK_BODY_SIZE)));
     TEST_ASSERT_TRUE (check_blocks (ReallocSameSize_test_values, ARRAYELEMENTCOUNT(ReallocSameSize_test_values)));
 }
 
@@ -74,7 +74,7 @@ struct block_test_values ReallocFree_test_values[] =
 
 void testReallocFree(void)
 {
-    void *foo = umm_malloc (2);
+    void *foo = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE/2);
 
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], foo);
 
@@ -93,7 +93,7 @@ struct block_test_values ReallocFreeRealloc_test_values[] =
 
 void testReallocFreeRealloc(void)
 {
-    void *foo = umm_malloc (2);
+    void *foo = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE/2);
 
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], foo);
     TEST_ASSERT_TRUE (check_blocks (ReallocFreeRealloc_test_values, ARRAYELEMENTCOUNT(ReallocFreeRealloc_test_values)));
@@ -104,7 +104,7 @@ void testReallocFreeRealloc(void)
 
     // Realloc with a request that is same size or block size should leave the original memory untouched.
 
-    TEST_ASSERT_EQUAL_PTR((void *)foo, (umm_realloc (NULL, 4)));
+    TEST_ASSERT_EQUAL_PTR((void *)foo, (umm_realloc (NULL, UMM_FIRST_BLOCK_BODY_SIZE)));
     TEST_ASSERT_TRUE (check_blocks (ReallocSameSize_test_values, ARRAYELEMENTCOUNT(ReallocSameSize_test_values)));
 }
 
@@ -119,10 +119,10 @@ struct block_test_values ReallocAssimilateUpExact[] =
 
 void testReallocAssimilateUpExact(void)
 {
-    void *mem0 = umm_malloc (2);
-    void *mem1 = umm_malloc (2);
-    void *mem2 = umm_malloc (2);
-    void *mem3 = umm_malloc (2);
+    void *mem0 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
+    void *mem1 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
+    void *mem2 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
+    void *mem3 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
 
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[   1][UMM_BLOCK_HEADER_SIZE], mem0                        );
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[   2][UMM_BLOCK_HEADER_SIZE], mem1                        );
@@ -133,7 +133,7 @@ void testReallocAssimilateUpExact(void)
 
     umm_free( mem2 );
 
-    TEST_ASSERT_EQUAL_PTR((void *)mem1, (umm_realloc (mem1, 5)));
+    TEST_ASSERT_EQUAL_PTR((void *)mem1, (umm_realloc (mem1, UMM_FIRST_BLOCK_BODY_SIZE+1)));
     TEST_ASSERT_TRUE (check_blocks (ReallocAssimilateUpExact, ARRAYELEMENTCOUNT(ReallocAssimilateUpExact)));
 }
 
@@ -147,9 +147,9 @@ struct block_test_values ReallocAssimilateDown[] =
 
 void testReallocAssimilateDown(void)
 {
-    void *mem0 = umm_malloc (2);
-    void *mem1 = umm_malloc (2);
-    void *mem2 = umm_malloc (2);
+    void *mem0 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
+    void *mem1 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
+    void *mem2 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
 
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[   1][UMM_BLOCK_HEADER_SIZE], mem0                        );
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[   2][UMM_BLOCK_HEADER_SIZE], mem1                        );
@@ -159,7 +159,7 @@ void testReallocAssimilateDown(void)
 
     umm_free( mem0 );
 
-    TEST_ASSERT_EQUAL_PTR((void *)mem0, (umm_realloc (mem1, 5)));
+    TEST_ASSERT_EQUAL_PTR((void *)mem0, (umm_realloc (mem1, UMM_FIRST_BLOCK_BODY_SIZE+1)));
     TEST_ASSERT_TRUE (check_blocks (ReallocAssimilateDown, ARRAYELEMENTCOUNT(ReallocAssimilateDown)));
 }
 
@@ -173,10 +173,10 @@ struct block_test_values ReallocAssimilateUpDown[] =
 
 void testReallocAssimilateUpDown(void)
 {
-    void *mem0 = umm_malloc (2);
-    void *mem1 = umm_malloc (2);
-    void *mem2 = umm_malloc (2);
-    void *mem3 = umm_malloc (2);
+    void *mem0 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
+    void *mem1 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
+    void *mem2 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
+    void *mem3 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
 
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[   1][UMM_BLOCK_HEADER_SIZE], mem0                        );
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[   2][UMM_BLOCK_HEADER_SIZE], mem1                        );
@@ -188,7 +188,7 @@ void testReallocAssimilateUpDown(void)
     umm_free( mem0 );
     umm_free( mem2 );
 
-    TEST_ASSERT_EQUAL_PTR((void *)mem0, (umm_realloc (mem1, 20)));
+    TEST_ASSERT_EQUAL_PTR((void *)mem0, (umm_realloc (mem1, UMM_FIRST_BLOCK_BODY_SIZE+UMM_BLOCK_BODY_SIZE*2)));
     TEST_ASSERT_TRUE (check_blocks (ReallocAssimilateUpDown, ARRAYELEMENTCOUNT(ReallocAssimilateUpDown)));
 }
 
@@ -203,10 +203,10 @@ struct block_test_values ReallocAssimilateForceDown[] =
 
 void testReallocAssimilateForceDown(void)
 {
-    void *mem0 = umm_malloc (6);
-    void *mem1 = umm_malloc (2);
-    void *mem2 = umm_malloc (6);
-    void *mem3 = umm_malloc (2);
+    void *mem0 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE+UMM_BLOCK_BODY_SIZE);
+    void *mem1 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
+    void *mem2 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE+UMM_BLOCK_BODY_SIZE);
+    void *mem3 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
 
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[   1][UMM_BLOCK_HEADER_SIZE], mem0                        );
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[   3][UMM_BLOCK_HEADER_SIZE], mem1                        );
@@ -219,7 +219,7 @@ void testReallocAssimilateForceDown(void)
     umm_free( mem0 );
     umm_free( mem2 );
 
-    TEST_ASSERT_EQUAL_PTR((void *)mem0, (umm_realloc (mem1, 6)));
+    TEST_ASSERT_EQUAL_PTR((void *)mem0, (umm_realloc (mem1, UMM_FIRST_BLOCK_BODY_SIZE+UMM_BLOCK_BODY_SIZE)));
     TEST_ASSERT_TRUE (check_blocks (ReallocAssimilateForceDown, ARRAYELEMENTCOUNT(ReallocAssimilateForceDown)));
 }
 
@@ -235,9 +235,9 @@ struct block_test_values ReallocNewBlock[] =
 
 void testReallocNewBlock(void)
 {
-    void *mem0 = umm_malloc (2);
-    void *mem1 = umm_malloc (2);
-    void *mem2 = umm_malloc (2);
+    void *mem0 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
+    void *mem1 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
+    void *mem2 = umm_malloc (UMM_FIRST_BLOCK_BODY_SIZE);
 
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[   1][UMM_BLOCK_HEADER_SIZE], mem0                        );
     TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[   2][UMM_BLOCK_HEADER_SIZE], mem1                        );
@@ -245,6 +245,6 @@ void testReallocNewBlock(void)
 
     /* Realloc the middle block - should need a totally new block */
 
-    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[   4][UMM_BLOCK_HEADER_SIZE], (umm_realloc(mem1, 5)));
+    TEST_ASSERT_EQUAL_PTR((void *)&test_umm_heap[   4][UMM_BLOCK_HEADER_SIZE], (umm_realloc(mem1, UMM_FIRST_BLOCK_BODY_SIZE+UMM_BLOCK_BODY_SIZE)));
     TEST_ASSERT_TRUE (check_blocks (ReallocNewBlock, ARRAYELEMENTCOUNT(ReallocNewBlock)));
 }

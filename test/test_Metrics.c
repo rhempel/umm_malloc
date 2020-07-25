@@ -57,7 +57,7 @@ void testMetricsFull(void)
   memset(p, sizeof(p), 0);
 
   for( i=0; i<(UMM_LASTBLOCK-1); ++i )
-    p[i] = umm_malloc(4);
+    p[i] = umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE);
 
 #ifdef UMM_INLINE_METRICS
   TEST_ASSERT_EQUAL (0, umm_fragmentation_metric());
@@ -74,7 +74,7 @@ void testMetricsSparseFull(void)
   memset(p, sizeof(p), 0);
 
   for( i=0; i<(UMM_LASTBLOCK); ++i )
-    p[i] = umm_malloc(4);
+    p[i] = umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE);
 
   for( i=1; i<(UMM_LASTBLOCK); i+=2 )
     umm_free(p[i]);
@@ -94,7 +94,7 @@ void testMetricsSparse7of8(void)
   memset(p, sizeof(p), 0);
 
   for( i=0; i<((UMM_LASTBLOCK*7)/8); ++i )
-    p[i] = umm_malloc(4);
+    p[i] = umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE);
 
   for( i=1; i<((UMM_LASTBLOCK*7)/8); i+=2 )
     umm_free(p[i]);
@@ -114,7 +114,7 @@ void testMetricsSparse3of4(void)
   memset(p, sizeof(p), 0);
 
   for( i=0; i<((UMM_LASTBLOCK*3)/4); ++i )
-    p[i] = umm_malloc(4);
+    p[i] = umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE);
 
   for( i=1; i<((UMM_LASTBLOCK*3)/4); i+=2 )
     umm_free(p[i]);
@@ -134,7 +134,7 @@ void testMetricsSparse1of2(void)
   memset(p, sizeof(p), 0);
 
   for( i=0; i<((UMM_LASTBLOCK*1)/2); ++i )
-    p[i] = umm_malloc(4);
+    p[i] = umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE);
 
   for( i=1; i<((UMM_LASTBLOCK*1)/2); i+=2 )
     umm_free(p[i]);
@@ -154,7 +154,7 @@ void testMetricsSparse1of4(void)
   memset(p, sizeof(p), 0);
 
   for( i=0; i<((UMM_LASTBLOCK*1)/4); ++i )
-    p[i] = umm_malloc(4);
+    p[i] = umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE);
 
   for( i=1; i<((UMM_LASTBLOCK*1)/4); i+=2 )
     umm_free(p[i]);
@@ -174,7 +174,7 @@ void testMetricsSparse1of8(void)
   memset(p, sizeof(p), 0);
 
   for( i=0; i<((UMM_LASTBLOCK*1)/8); ++i )
-    p[i] = umm_malloc(4);
+    p[i] = umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE);
 
   for( i=1; i<((UMM_LASTBLOCK*1)/8); i+=2 )
     umm_free(p[i]);

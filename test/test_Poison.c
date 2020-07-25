@@ -19,12 +19,12 @@ void tearDown(void)
 
 void testPoisonFirst(void)
 {
-    TEST_ASSERT_NOT_NULL (umm_test_poison.umm_test_malloc(4));
+    TEST_ASSERT_NOT_NULL (umm_test_poison.umm_test_malloc(UMM_FIRST_BLOCK_BODY_SIZE));
 }
 
 void testPoisonClobberLeading(void)
 {
-    void *p = umm_test_poison.umm_test_malloc(64);
+    void *p = umm_test_poison.umm_test_malloc(UMM_BLOCK_BODY_SIZE*8);
 
     p = p - 1;
     *(char *)p = 0x00;
@@ -34,9 +34,9 @@ void testPoisonClobberLeading(void)
 
 void testPoisonClobberTrailing(void)
 {
-    void *p = umm_test_poison.umm_test_malloc(64);
+    void *p = umm_test_poison.umm_test_malloc(UMM_BLOCK_BODY_SIZE*8);
 
-    p = p + 64;
+    p = p + UMM_BLOCK_BODY_SIZE*8;
     *(char *)p = 0x00;
 
     TEST_ASSERT_EQUAL(0, POISON_CHECK());
@@ -65,7 +65,8 @@ void testPoisonRandom(void)
             umm_test_poison.umm_test_free(p[j]);
         }
 
-        p[j] = umm_test_poison.umm_test_malloc(s);
+//DBGLOG_FORCE( true, "s t: %ld %d\n", s, normalize_allocation_size(s));
+        p[j] = umm_test_poison.umm_test_malloc(normalize_allocation_size(s));
 
         if (0==s) {
             TEST_ASSERT_NULL( p[j] );
@@ -77,7 +78,8 @@ void testPoisonRandom(void)
 
 void testPoisonStress(void)
 {
-  uint64_t t = stress_test( 100*1000, &umm_test_poison );
+//uint64_t t = stress_test( 100*1000, &umm_test_poison );
+  uint64_t t = stress_test( 10, &umm_test_poison );
 
   umm_info( 0, true  );
   DBGLOG_FORCE( true, "Free Heap Size:    %ld\n", umm_free_heap_size() );
@@ -92,7 +94,8 @@ void testPoisonStressLoop(void)
 
   for (i=0; i<4; ++i) {
       umm_init();
-      t = stress_test( 100*1000, &umm_test_poison );
+//    t = stress_test( 100*1000, &umm_test_poison );
+      t = stress_test( 10, &umm_test_poison );
       umm_info( 0, false  );
       DBGLOG_FORCE( true, "Free Heap Size:      %ld\n", umm_free_heap_size() );
       DBGLOG_FORCE( true, "Typical Time (usec): %lf\n", (double)t/((100*1000)) );

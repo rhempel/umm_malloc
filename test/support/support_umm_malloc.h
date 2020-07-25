@@ -13,6 +13,7 @@
 #include <umm_malloc_cfg.h>
 
 #define UMM_BLOCK_HEADER_SIZE (4)
+#define UMM_FIRST_BLOCK_BODY_SIZE (UMM_BLOCK_BODY_SIZE-UMM_BLOCK_HEADER_SIZE)
 
 extern char test_umm_heap[][UMM_BLOCK_BODY_SIZE];
 extern int umm_max_critical_depth;
@@ -27,6 +28,7 @@ struct block_test_values {
     uint16_t prev_free;
 };
 
+extern size_t normalize_allocation_size(size_t);
 extern bool check_block(struct block_test_values *);
 extern bool check_blocks(struct block_test_values *, size_t);
 
@@ -42,7 +44,8 @@ extern uint32_t rand32(void);
 
 #define ARRAYELEMENTCOUNT(x) (sizeof (x) / sizeof (x)[0])
 
-#define SUPPORT_UMM_MALLOC_HEAP_SIZE (0x2000*UMM_BLOCK_BODY_SIZE)
+#define SUPPORT_UMM_MALLOC_BLOCKS (0x2000)
+#define SUPPORT_UMM_MALLOC_HEAP_SIZE (SUPPORT_UMM_MALLOC_BLOCKS*UMM_BLOCK_BODY_SIZE)
 #define UMM_LASTBLOCK ((SUPPORT_UMM_MALLOC_HEAP_SIZE/UMM_BLOCK_BODY_SIZE)-1)
 
 #define TEST_MSG_LEN (132)

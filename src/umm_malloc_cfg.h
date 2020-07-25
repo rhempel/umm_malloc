@@ -100,7 +100,9 @@
     #define UMM_BLOCK_BODY_SIZE (8)
 #endif
 
-#if (UMM_BLOCK_BODY_SIZE < 8)
+#define UMM_MIN_BLOCK_BODY_SIZE (8)
+
+#if (UMM_BLOCK_BODY_SIZE < UMM_MIN_BLOCK_BODY_SIZE)
     #error UMM_BLOCK_BODY_SIZE must be at least 8!
 #endif
 
