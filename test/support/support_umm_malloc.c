@@ -125,7 +125,7 @@ bool check_blocks (struct block_test_values *t, size_t n)
     return (true);
 }
 
-static uint32_t seed = 0;
+static uint64_t seed = 0;
 
 void srand32(uint32_t s)
 {
@@ -134,9 +134,9 @@ void srand32(uint32_t s)
 
 uint32_t rand32(void)
 {
-    seed = (uint32_t)(((uint64_t)1664525 * seed) + 1013904223);
+    seed = (uint32_t)(((uint64_t)2862933555777941757 * seed) + 3037000493);
 
-    return seed;
+    return seed>>10;
 }
 
 #define STRESS_TEST_ENTRIES (256)
