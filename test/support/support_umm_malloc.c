@@ -112,7 +112,6 @@ size_t normalize_allocation_size(size_t s)
         full_blocks = ((s-(UMM_MIN_BLOCK_BODY_SIZE-UMM_BLOCK_HEADER_SIZE))/UMM_MIN_BLOCK_BODY_SIZE);
         extra_bytes= (s-(UMM_MIN_BLOCK_BODY_SIZE-UMM_BLOCK_HEADER_SIZE)-(full_blocks*UMM_MIN_BLOCK_BODY_SIZE));
     }
-DBGLOG_FORCE( true, "s f b e t: %ld %ld %ld %ld %d\n", s, first_block, full_blocks, extra_bytes, first_block*UMM_FIRST_BLOCK_BODY_SIZE + full_blocks*UMM_BLOCK_BODY_SIZE + extra_bytes);
 
     return (first_block*UMM_FIRST_BLOCK_BODY_SIZE + full_blocks*UMM_BLOCK_BODY_SIZE + extra_bytes);
 }
@@ -288,4 +287,3 @@ uint64_t stress_test( int iterations, struct umm_test_functions *f )
 
   return umm_malloc_time;
 }
-

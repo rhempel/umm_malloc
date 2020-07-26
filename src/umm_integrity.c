@@ -45,7 +45,6 @@ bool umm_integrity_check(void) {
           DBGLOG_CRITICAL("Heap integrity broken: too large next free num: %d "
                           "(in block %d, addr 0x%08x)\n",
                           cur, prev, DBGLOG_32_BIT_PTR(&UMM_NBLOCK(prev)));
-#warning double check the pointer macros work!
       ok = false;
       goto clean;
     }
@@ -59,7 +58,6 @@ bool umm_integrity_check(void) {
           DBGLOG_CRITICAL("Heap integrity broken: free links don't match: "
                           "%d -> %d, but %d -> %d\n",
                           prev, cur, cur, UMM_PFREE(cur));
-#warning double check the pointer macros work!
       ok = false;
       goto clean;
     }
@@ -79,7 +77,6 @@ bool umm_integrity_check(void) {
           DBGLOG_CRITICAL("Heap integrity broken: too large next block num: %d "
                           "(in block %d, addr 0x%08x)\n",
                           cur, prev, DBGLOG_32_BIT_PTR(&UMM_NBLOCK(prev)));
-#warning double check the pointer macros work!
       ok = false;
       goto clean;
     }
@@ -96,7 +93,6 @@ bool umm_integrity_check(void) {
                           DBGLOG_32_BIT_PTR(&UMM_NBLOCK(cur)),
                           (UMM_NBLOCK(cur) & UMM_FREELIST_MASK),
                           (UMM_PBLOCK(cur) & UMM_FREELIST_MASK));
-#warning double check the pointer macros work!
       ok = false;
       goto clean;
     }
@@ -106,7 +102,6 @@ bool umm_integrity_check(void) {
           DBGLOG_CRITICAL("Heap integrity broken: next block %d is before prev this one "
                           "(in block %d, addr 0x%08x)\n",
                           cur, prev, DBGLOG_32_BIT_PTR(&UMM_NBLOCK(prev)));
-#warning double check the pointer macros work!
       ok = false;
       goto clean;
     }
@@ -119,7 +114,6 @@ bool umm_integrity_check(void) {
           DBGLOG_CRITICAL("Heap integrity broken: block links don't match: "
                           "%d -> %d, but %d -> %d\n",
                           prev, cur, cur, UMM_PBLOCK(cur));
-#warning double check the pointer macros work!
       ok = false;
       goto clean;
     }

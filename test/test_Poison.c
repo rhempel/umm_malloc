@@ -17,6 +17,7 @@ void tearDown(void)
     TEST_ASSERT_LESS_OR_EQUAL (1, umm_max_critical_depth);
 }
 
+#ifdef UMM_POISON_CHECK
 void testPoisonFirst(void)
 {
     TEST_ASSERT_NOT_NULL (umm_test_poison.umm_test_malloc(UMM_FIRST_BLOCK_BODY_SIZE));
@@ -41,6 +42,7 @@ void testPoisonClobberTrailing(void)
 
     TEST_ASSERT_EQUAL(0, POISON_CHECK());
 }
+#endif
 
 void testPoisonRandom(void)
 {
@@ -65,7 +67,6 @@ void testPoisonRandom(void)
             umm_test_poison.umm_test_free(p[j]);
         }
 
-//DBGLOG_FORCE( true, "s t: %ld %d\n", s, normalize_allocation_size(s));
         p[j] = umm_test_poison.umm_test_malloc(normalize_allocation_size(s));
 
         if (0==s) {
@@ -78,14 +79,14 @@ void testPoisonRandom(void)
 
 void testPoisonStress(void)
 {
-//uint64_t t = stress_test( 100*1000, &umm_test_poison );
-  uint64_t t = stress_test( 10, &umm_test_poison );
+  uint64_t t = stress_test( 100*1000, &umm_test_poison );
 
   umm_info( 0, true  );
   DBGLOG_FORCE( true, "Free Heap Size:    %ld\n", umm_free_heap_size() );
   DBGLOG_FORCE( true, "Typical Time (usec): %lf\n", (double)t/((100*1000)) );
 }
 
+#ifdef UMM_POISON_CHECK
 void testPoisonStressLoop(void)
 {
   int i;
@@ -94,8 +95,7 @@ void testPoisonStressLoop(void)
 
   for (i=0; i<4; ++i) {
       umm_init();
-//    t = stress_test( 100*1000, &umm_test_poison );
-      t = stress_test( 10, &umm_test_poison );
+      t = stress_test( 100*1000, &umm_test_poison );
       umm_info( 0, false  );
       DBGLOG_FORCE( true, "Free Heap Size:      %ld\n", umm_free_heap_size() );
       DBGLOG_FORCE( true, "Typical Time (usec): %lf\n", (double)t/((100*1000)) );
@@ -104,3 +104,4 @@ void testPoisonStressLoop(void)
 
   DBGLOG_FORCE( true, "Typical Time (usec): %lf\n", (double)total/(4*(100*1000)) );
 }
+#endif
