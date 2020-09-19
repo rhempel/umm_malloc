@@ -18,7 +18,7 @@ that I examined in detail.
 Doug Lea's paper on malloc() was another excellent reference and provides
 a lot of detail on advanced memory management techniques such as binning.
 
-`http://g.oswego.edu/dl/html/malloc.html`
+`http://gee.cs.oswego.edu/dl/html/malloc.html`
 
 Bill Dittman provided excellent suggestions, including macros to support
 using these functions in critical sections, and for optimizing `realloc()`
