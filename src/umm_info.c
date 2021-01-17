@@ -152,12 +152,12 @@ void *umm_info( void *ptr, bool force ) {
 /* ------------------------------------------------------------------------ */
 
 size_t umm_free_heap_size( void ) {
-  umm_info(NULL, 0);
+  umm_info(NULL, false);
   return (size_t)ummHeapInfo.freeBlocks * sizeof(umm_block);
 }
 
 size_t umm_max_free_block_size( void ) {
-  umm_info(NULL, 0);
+  umm_info(NULL, false);
   return ummHeapInfo.maxFreeContiguousBlocks * sizeof(umm_block);
 }
 
