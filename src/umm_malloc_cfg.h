@@ -140,7 +140,7 @@
 /* -------------------------------------------------------------------------- */
 
 #ifdef UMM_INFO
-  typedef struct UMM_HEAP_INFO_t {
+typedef struct UMM_HEAP_INFO_t {
     unsigned int totalEntries;
     unsigned int usedEntries;
     unsigned int freeEntries;
@@ -151,16 +151,16 @@
     unsigned int freeBlocksSquared;
 
     unsigned int maxFreeContiguousBlocks;
-  }
-  UMM_HEAP_INFO;
+}
+UMM_HEAP_INFO;
 
-  extern UMM_HEAP_INFO ummHeapInfo;
+extern UMM_HEAP_INFO ummHeapInfo;
 
-  extern void *umm_info( void *ptr, bool force );
-  extern size_t umm_free_heap_size( void );
-  extern size_t umm_max_free_block_size( void );
-  extern int umm_usage_metric( void );
-  extern int umm_fragmentation_metric( void );
+extern void *umm_info(void *ptr, bool force);
+extern size_t umm_free_heap_size(void);
+extern size_t umm_max_free_block_size(void);
+extern int umm_usage_metric(void);
+extern int umm_fragmentation_metric(void);
 #else
   #define umm_info(p,b)
   #define umm_free_heap_size() (0)
@@ -180,14 +180,14 @@
  */
 
 #ifdef UMM_TEST_BUILD
-    extern int umm_critical_depth;
-    extern int umm_max_critical_depth;
-    #define UMM_CRITICAL_ENTRY() {\
-          ++umm_critical_depth; \
-          if (umm_critical_depth > umm_max_critical_depth) { \
-              umm_max_critical_depth = umm_critical_depth; \
-          } \
-    }
+extern int umm_critical_depth;
+extern int umm_max_critical_depth;
+    #define UMM_CRITICAL_ENTRY() { \
+        ++umm_critical_depth; \
+        if (umm_critical_depth > umm_max_critical_depth) { \
+            umm_max_critical_depth = umm_critical_depth; \
+        } \
+}
     #define UMM_CRITICAL_EXIT()  (umm_critical_depth--)
 #else
     #define UMM_CRITICAL_ENTRY()
@@ -207,12 +207,12 @@
  */
 
 #ifdef UMM_INTEGRITY_CHECK
-   extern bool umm_integrity_check( void );
-#  define INTEGRITY_CHECK() umm_integrity_check()
-   extern void umm_corruption(void);
-#  define UMM_HEAP_CORRUPTION_CB() printf( "Heap Corruption!" )
+extern bool umm_integrity_check(void);
+#define INTEGRITY_CHECK() umm_integrity_check()
+extern void umm_corruption(void);
+#define UMM_HEAP_CORRUPTION_CB() printf("Heap Corruption!")
 #else
-#  define INTEGRITY_CHECK() (1)
+#define INTEGRITY_CHECK() (1)
 #endif
 
 /*
@@ -247,11 +247,11 @@
    #define UMM_POISON_SIZE_AFTER (4)
    #define UMM_POISONED_BLOCK_LEN_TYPE uint16_t
 
-   extern void *umm_poison_malloc( size_t size );
-   extern void *umm_poison_calloc( size_t num, size_t size );
-   extern void *umm_poison_realloc( void *ptr, size_t size );
-   extern void  umm_poison_free( void *ptr );
-   extern bool  umm_poison_check( void );
+extern void *umm_poison_malloc(size_t size);
+extern void *umm_poison_calloc(size_t num, size_t size);
+extern void *umm_poison_realloc(void *ptr, size_t size);
+extern void  umm_poison_free(void *ptr);
+extern bool  umm_poison_check(void);
 
    #define POISON_CHECK() umm_poison_check()
 #else

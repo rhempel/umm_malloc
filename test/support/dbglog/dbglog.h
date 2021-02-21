@@ -41,8 +41,8 @@
  * ----------------------------------------------------------------------------
  */
 
-//#ifndef __DBGLOG_H__
-//#define __DBGLOG_H__
+// #ifndef __DBGLOG_H__
+// #define __DBGLOG_H__
 #define DBGLOG_LEVEL_TRACE (6)
 #define DBGLOG_LEVEL_DEBUG (5)
 #define DBGLOG_LEVEL_CRITICAL (4)
@@ -50,7 +50,7 @@
 #define DBGLOG_LEVEL_WARNING (2)
 #define DBGLOG_LEVEL_INFO (1)
 #define DBGLOG_LEVEL_FORCE (0)
-//#else
+// #else
 #undef DBGLOG_TRACE
 #undef DBGLOG_DEBUG
 #undef DBGLOG_CRITICAL
@@ -60,11 +60,11 @@
 #undef DBGLOG_FORCE
 
 #ifndef DBGLOG_LEVEL
-#  define DBGLOG_LEVEL 0
+#define DBGLOG_LEVEL 0
 #endif
 
 #ifndef DBGLOG_FUNCTION
-#  define DBGLOG_FUNCTION fprintf
+#define DBGLOG_FUNCTION fprintf
 #endif
 
 #define DBGLOG_32_BIT_PTR(x) ((uint32_t)(((uintptr_t)(x)) & 0xffffffff))
@@ -72,40 +72,40 @@
 /* ------------------------------------------------------------------------- */
 
 #if DBGLOG_LEVEL >= 6
-#  define DBGLOG_TRACE(format, ...) DBGLOG_FUNCTION(stdout, format, ## __VA_ARGS__); fflush(stdout);
+#define DBGLOG_TRACE(format, ...) DBGLOG_FUNCTION(stdout, format,##__VA_ARGS__); fflush(stdout);
 #else
-#  define DBGLOG_TRACE(format, ...)
+#define DBGLOG_TRACE(format, ...)
 #endif
 
 #if DBGLOG_LEVEL >= 5
-#  define DBGLOG_DEBUG(format, ...) DBGLOG_FUNCTION(stdout, format, ## __VA_ARGS__); fflush(stdout);
+#define DBGLOG_DEBUG(format, ...) DBGLOG_FUNCTION(stdout, format,##__VA_ARGS__); fflush(stdout);
 #else
-#  define DBGLOG_DEBUG(format, ...)
+#define DBGLOG_DEBUG(format, ...)
 #endif
 
 #if DBGLOG_LEVEL >= 4
-#  define DBGLOG_CRITICAL(format, ...) DBGLOG_FUNCTION(stdout, format, ## __VA_ARGS__); fflush(stdout);
+#define DBGLOG_CRITICAL(format, ...) DBGLOG_FUNCTION(stdout, format,##__VA_ARGS__); fflush(stdout);
 #else
-#  define DBGLOG_CRITICAL(format, ...)
+#define DBGLOG_CRITICAL(format, ...)
 #endif
 
 #if DBGLOG_LEVEL >= 3
-#  define DBGLOG_ERROR(format, ...) DBGLOG_FUNCTION(stdout, format, ## __VA_ARGS__); fflush(stdout);
+#define DBGLOG_ERROR(format, ...) DBGLOG_FUNCTION(stdout, format,##__VA_ARGS__); fflush(stdout);
 #else
-#  define DBGLOG_ERROR(format, ...)
+#define DBGLOG_ERROR(format, ...)
 #endif
 
 #if DBGLOG_LEVEL >= 2
-#  define DBGLOG_WARNING(format, ...) DBGLOG_FUNCTION(stdout, format, ## __VA_ARGS__); fflush(stdout);
+#define DBGLOG_WARNING(format, ...) DBGLOG_FUNCTION(stdout, format,##__VA_ARGS__); fflush(stdout);
 #else
-#  define DBGLOG_WARNING(format, ...)
+#define DBGLOG_WARNING(format, ...)
 #endif
 
 #if DBGLOG_LEVEL >= 1
-#  define DBGLOG_INFO(format, ...) DBGLOG_FUNCTION(stdout, format, ## __VA_ARGS__); fflush(stdout);
+#define DBGLOG_INFO(format, ...) DBGLOG_FUNCTION(stdout, format,##__VA_ARGS__); fflush(stdout);
 #else
-#  define DBGLOG_INFO(format, ...)
+#define DBGLOG_INFO(format, ...)
 #endif
 
-#define DBGLOG_FORCE(force, format, ...) {if(force) {DBGLOG_FUNCTION(stdout, format, ## __VA_ARGS__);fflush(stdout);}}
-//#endif /* __DBGLOG_H__ */
+#define DBGLOG_FORCE(force, format, ...) {if (force) {DBGLOG_FUNCTION(stdout, format,##__VA_ARGS__); fflush(stdout);}}
+// #endif /* __DBGLOG_H__ */

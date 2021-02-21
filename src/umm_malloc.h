@@ -16,11 +16,11 @@ extern "C" {
 
 /* ------------------------------------------------------------------------ */
 
-extern void  umm_init( void );
-extern void *umm_malloc( size_t size );
-extern void *umm_calloc( size_t num, size_t size );
-extern void *umm_realloc( void *ptr, size_t size );
-extern void  umm_free( void *ptr );
+extern void  umm_init(void);
+extern void *umm_malloc(size_t size);
+extern void *umm_calloc(size_t num, size_t size);
+extern void *umm_realloc(void *ptr, size_t size);
+extern void  umm_free(void *ptr);
 
 /* ------------------------------------------------------------------------ */
 
