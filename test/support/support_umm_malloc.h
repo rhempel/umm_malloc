@@ -4,13 +4,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <umm_malloc_cfg.h>
 /* Use the default DBGLOG_LEVEL and DBGLOG_FUNCTION */
 
-#define DBGLOG_LEVEL 0
-
-#include "dbglog/dbglog.h"
-
-#include <umm_malloc_cfg.h>
+#ifdef UMM_DBGLOG_ENABLE
+    #include "dbglog/dbglog.h"
+#endif
 
 #define UMM_BLOCK_HEADER_SIZE (4)
 #define UMM_FIRST_BLOCK_BODY_SIZE (UMM_BLOCK_BODY_SIZE - UMM_BLOCK_HEADER_SIZE)

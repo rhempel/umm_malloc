@@ -53,7 +53,7 @@ static bool check_poison(const void *ptr, size_t poison_size,
     }
 
     if (!ok) {
-        DBGLOG_ERROR("No poison %s block at: 0x%lx, actual data:", where, (void *)ptr);
+        DBGLOG_ERROR("No poison %s block at: 0x%08x, actual data:", (char *)where, DBGLOG_32_BIT_PTR(ptr));
         dump_mem(ptr, poison_size);
         DBGLOG_ERROR("\n");
     }
@@ -69,7 +69,7 @@ static bool check_poison_block(umm_block *pblock) {
     bool ok = true;
 
     if (pblock->header.used.next & UMM_FREELIST_MASK) {
-        DBGLOG_ERROR("check_poison_block is called for free block 0x%lx\n", (void *)pblock);
+        DBGLOG_ERROR("check_poison_block is called for free block 0x%08x\n", DBGLOG_32_BIT_PTR(pblock));
     } else {
         /* the block is used; let's check poison */
         void *pc = (void *)pblock->body.data;

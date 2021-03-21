@@ -46,9 +46,13 @@
 
 /* Use the default DBGLOG_LEVEL and DBGLOG_FUNCTION */
 
+// #define DBGLOG_ENABLE
+
 #define DBGLOG_LEVEL 0
 
-#include "dbglog/dbglog.h"
+#ifdef DBGLOG_ENABLE
+    #include "dbglog/dbglog.h"
+#endif
 
 extern void *UMM_MALLOC_CFG_HEAP_ADDR;
 extern uint32_t UMM_MALLOC_CFG_HEAP_SIZE;

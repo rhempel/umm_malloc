@@ -1,8 +1,17 @@
 #include "unity.h"
 
-#include "umm_malloc.h"
+#include <umm_malloc_cfg.h>
+#include <umm_malloc.h>
 
-#include "support_umm_malloc.h"
+#include <support_umm_malloc.h>
+
+/* Use the default DBGLOG_LEVEL and DBGLOG_FUNCTION */
+
+#define DBGLOG_LEVEL 0
+
+#ifdef DBGLOG_ENABLE
+    #include "dbglog/dbglog.h"
+#endif
 
 void setUp(void)
 {

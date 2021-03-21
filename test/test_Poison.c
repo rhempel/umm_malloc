@@ -1,9 +1,17 @@
 #include "unity.h"
 
-#include "umm_malloc.h"
-#include "umm_malloc_cfg.h"
+#include <umm_malloc_cfg.h>
+#include <umm_malloc.h>
 
-#include "support_umm_malloc.h"
+#include <support_umm_malloc.h>
+
+/* Use the default DBGLOG_LEVEL and DBGLOG_FUNCTION */
+
+#define DBGLOG_LEVEL 0
+
+#ifdef DBGLOG_ENABLE
+    #include "dbglog/dbglog.h"
+#endif
 
 void setUp(void)
 {
@@ -81,7 +89,7 @@ void testPoisonStress(void)
 {
   uint64_t t = stress_test( 100*1000, &umm_test_poison );
 
-  umm_info( 0, true  );
+  umm_info( 0, true );
   DBGLOG_FORCE( true, "Free Heap Size:    %ld\n", umm_free_heap_size() );
   DBGLOG_FORCE( true, "Typical Time (usec): %lf\n", (double)t/((100*1000)) );
 }
@@ -96,7 +104,7 @@ void testPoisonStressLoop(void)
   for (i=0; i<4; ++i) {
       umm_init();
       t = stress_test( 100*1000, &umm_test_poison );
-      umm_info( 0, false  );
+      umm_info( 0, false );
       DBGLOG_FORCE( true, "Free Heap Size:      %ld\n", umm_free_heap_size() );
       DBGLOG_FORCE( true, "Typical Time (usec): %lf\n", (double)t/((100*1000)) );
       total += t;

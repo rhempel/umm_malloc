@@ -75,7 +75,13 @@
  * Note this uses an extra 8 bytes per allocation, but you get the benefit of
  * being able to detect if your program is writing past an allocated buffer.
  *
- * UMM_DBG_LOG_LEVEL=n
+ * DBGLOG_ENABLE
+ *
+ * Set if you want to enable logging - the default is to use printf() but
+ * if you have any special requirements such as thread safety or a custom
+ * logging routine - you are free to everride the default
+ *
+ * DBGLOG_LEVEL=n
  *
  * Set n to a value from 0 to 6 depending on how verbose you want the debug
  * log to be
@@ -260,5 +266,19 @@ extern bool  umm_poison_check(void);
 #else
   #define POISON_CHECK() (1)
 #endif
+
+/*
+ * Add blank macros for DBGLOG_xxx() - if you want to override these on
+ * a per-source module basis, you must define DBGLOG_LEVEL and then
+ * #include "dbglog.h"
+ */
+
+#define DBGLOG_TRACE(format, ...)
+#define DBGLOG_DEBUG(format, ...)
+#define DBGLOG_CRITICAL(format, ...)
+#define DBGLOG_ERROR(format, ...)
+#define DBGLOG_WARNING(format, ...)
+#define DBGLOG_INFO(format, ...)
+#define DBGLOG_FORCE(format, ...)
 
 #endif /* _UMM_MALLOC_CFG_H */
