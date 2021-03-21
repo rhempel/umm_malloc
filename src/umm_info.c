@@ -138,8 +138,16 @@ void *umm_info(void *ptr, bool force) {
 
     DBGLOG_FORCE(force, "+--------------------------------------------------------------+\n");
 
-    DBGLOG_FORCE(force, "Usage Metric:               %5i\n", umm_usage_metric());
-    DBGLOG_FORCE(force, "Fragmentation Metric:       %5i\n", umm_fragmentation_metric());
+    if (0 == ummHeapInfo.freeBlocks) {
+        ummHeapInfo.usage_metric = -1;        // No free blocks!
+        ummHeapInfo.fragmentation_metric = 0; // ... so no fragmentation either!
+    } else {
+        ummHeapInfo.usage_metric = (int)((ummHeapInfo.usedBlocks * 100) / (ummHeapInfo.freeBlocks));
+        ummHeapInfo.fragmentation_metric = 100 - (((uint32_t)(sqrtf(ummHeapInfo.freeBlocksSquared)) * 100) / (ummHeapInfo.freeBlocks));
+    }
+
+    DBGLOG_FORCE(force, "Usage Metric:               %5i\n", ummHeapInfo.usage_metric);
+    DBGLOG_FORCE(force, "Fragmentation Metric:       %5i\n", ummHeapInfo.fragmentation_metric);
 
     DBGLOG_FORCE(force, "+--------------------------------------------------------------+\n");
 
@@ -167,24 +175,18 @@ int umm_usage_metric(void) {
     #ifndef UMM_INLINE_METRICS
     umm_info(NULL, false);
     #endif
-    DBGLOG_DEBUG("usedBlocks %i totalBlocks %i\n", umm_metrics.usedBlocks, ummHeapInfo.totalBlocks);
-    if (ummHeapInfo.freeBlocks) {
-        return (int)((ummHeapInfo.usedBlocks * 100) / (ummHeapInfo.freeBlocks));
-    }
+    DBGLOG_DEBUG("usedBlocks %i totalBlocks %i\n", ummHeapInfo.usedBlocks, ummHeapInfo.totalBlocks);
 
-    return -1; // no freeBlocks
+    return ummHeapInfo.usage_metric;
 }
 
 int umm_fragmentation_metric(void) {
     #ifndef UMM_INLINE_METRICS
     umm_info(NULL, false);
     #endif
-    DBGLOG_DEBUG("freeBlocks %i freeBlocksSquared %i\n", umm_metrics.freeBlocks, ummHeapInfo.freeBlocksSquared);
-    if (0 == ummHeapInfo.freeBlocks) {
-        return 0;
-    } else {
-        return 100 - (((uint32_t)(sqrtf(ummHeapInfo.freeBlocksSquared)) * 100) / (ummHeapInfo.freeBlocks));
-    }
+    DBGLOG_DEBUG("freeBlocks %i freeBlocksSquared %i\n", ummHeapInfo.freeBlocks, ummHeapInfo.freeBlocksSquared);
+
+    return ummHeapInfo.fragmentation_metric;
 }
 
 #ifdef UMM_INLINE_METRICS

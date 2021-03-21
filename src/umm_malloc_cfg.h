@@ -151,6 +151,9 @@ typedef struct UMM_HEAP_INFO_t {
     unsigned int freeBlocksSquared;
 
     unsigned int maxFreeContiguousBlocks;
+
+    int usage_metric;
+    int fragmentation_metric;
 }
 UMM_HEAP_INFO;
 
