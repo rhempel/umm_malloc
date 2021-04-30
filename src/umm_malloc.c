@@ -41,7 +41,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "umm_malloc_cfg.h"   /* user-dependent */
+#include "umm_malloc_cfg.h"   // Override with umm_malloc_cfg_xxx.h
 #include "umm_malloc.h"
 
 /* Use the default DBGLOG_LEVEL and DBGLOG_FUNCTION */
