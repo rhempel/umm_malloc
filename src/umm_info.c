@@ -24,7 +24,7 @@
 UMM_HEAP_INFO ummHeapInfo;
 
 void *umm_info(void *ptr, bool force) {
-    if (umm_heap == NULL) {
+    if (UMM_HEAP == NULL) {
         umm_init();
     }
 
@@ -163,7 +163,7 @@ size_t umm_free_heap_size(void) {
     #ifndef UMM_INLINE_METRICS
     umm_info(NULL, false);
     #endif
-    return (size_t)ummHeapInfo.freeBlocks * sizeof(umm_block);
+    return (size_t)ummHeapInfo.freeBlocks * UMM_BLOCKSIZE;
 }
 
 size_t umm_max_free_block_size(void) {

@@ -56,6 +56,11 @@
  *           We have not verified the checks below for 64 bit machines
  *           because this library is targeted for 32 bit machines.
  *
+ * UMM_NUM_HEAPS
+ *
+ * Set to the maximum number of heaps that can be defined by the
+ * application - defaults to 1.
+ *
  * UMM_BEST_FIT (default)
  *
  * Set this if you want to use a best-fit algorithm for allocating new blocks.
@@ -135,6 +140,16 @@
 
 #if ((UMM_BLOCK_BODY_SIZE % 4) != 0)
     #error UMM_BLOCK_BODY_SIZE must be multiple of 4!
+#endif
+
+/* -------------------------------------------------------------------------- */
+
+#ifndef UMM_NUM_HEAPS
+    #define UMM_NUM_HEAPS (1)
+#endif
+
+#if (UMM_NUM_HEAPS < 1)
+    #error UMM_NUM_HEAPS must be at least 1!
 #endif
 
 /* -------------------------------------------------------------------------- */

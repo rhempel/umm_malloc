@@ -31,7 +31,7 @@ bool umm_integrity_check(void) {
     uint16_t prev;
     uint16_t cur;
 
-    if (umm_heap == NULL) {
+    if (UMM_HEAP == NULL) {
         umm_init();
     }
 
