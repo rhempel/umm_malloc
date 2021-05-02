@@ -33,6 +33,7 @@
  * R.Hempel 2020-01-20 - Move metric functions back to umm_info - See Issue 29
  * R.Hempel 2020-02-01 - Macro functions are uppercased - See Issue 34
  * R.Hempel 2020-06-20 - Support alternate body size - See Issue 42
+ * R.Hempel 2021-05-02 - Support explicit memory umm_init_heap() - See Issue 53
  * ----------------------------------------------------------------------------
  */
 
@@ -244,11 +245,13 @@ static uint16_t umm_assimilate_down(uint16_t c, uint16_t freemask) {
 
 /* ------------------------------------------------------------------------- */
 
-void umm_init(void) {
+void umm_init_heap(void *ptr, size_t size)
+{
     /* init heap pointer and size, and memset it to 0 */
-    UMM_HEAP = (umm_block *)UMM_MALLOC_CFG_HEAP_ADDR;
-    UMM_NUMBLOCKS = (UMM_MALLOC_CFG_HEAP_SIZE / UMM_BLOCKSIZE);
-    memset(UMM_HEAP, 0x00, UMM_MALLOC_CFG_HEAP_SIZE);
+    UMM_HEAP = (umm_block *)ptr;
+    UMM_HEAPSIZE = size;
+    UMM_NUMBLOCKS = (UMM_HEAPSIZE / UMM_BLOCKSIZE);
+    memset(UMM_HEAP, 0x00, UMM_HEAPSIZE);
 
     /* setup initial blank heap structure */
     UMM_FRAGMENTATION_METRIC_INIT();
@@ -292,6 +295,12 @@ void umm_init(void) {
 // DBGLOG_FORCE(true, "nblock(0) %04x pblock(0) %04x nfree(0) %04x pfree(0) %04x\n", UMM_NBLOCK(0) & UMM_BLOCKNO_MASK, UMM_PBLOCK(0), UMM_NFREE(0), UMM_PFREE(0));
 // DBGLOG_FORCE(true, "nblock(1) %04x pblock(1) %04x nfree(1) %04x pfree(1) %04x\n", UMM_NBLOCK(1) & UMM_BLOCKNO_MASK, UMM_PBLOCK(1), UMM_NFREE(1), UMM_PFREE(1));
 
+}
+
+void umm_init(void) {
+    /* Initialize the heap from linker supplied values */
+
+    umm_init_heap(UMM_MALLOC_CFG_HEAP_ADDR, UMM_MALLOC_CFG_HEAP_SIZE);
 }
 
 /* ------------------------------------------------------------------------
