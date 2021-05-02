@@ -207,9 +207,7 @@ bool umm_poison_check(void) {
     bool ok = true;
     unsigned short int cur;
 
-    if (UMM_HEAP == NULL) {
-        umm_init();
-    }
+    UMM_CHECK_INITIALIZED();
 
     /* Now iterate through the blocks list */
     cur = UMM_NBLOCK(0) & UMM_BLOCKNO_MASK;

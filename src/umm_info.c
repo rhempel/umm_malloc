@@ -24,11 +24,9 @@
 UMM_HEAP_INFO ummHeapInfo;
 
 void *umm_info(void *ptr, bool force) {
-    if (UMM_HEAP == NULL) {
-        umm_init();
-    }
-
     uint16_t blockNo = 0;
+
+    UMM_CHECK_INITIALIZED();
 
     /* Protect the critical section... */
     UMM_CRITICAL_ENTRY();

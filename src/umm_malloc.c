@@ -360,9 +360,7 @@ static void umm_free_core(void *ptr) {
 
 void umm_free(void *ptr) {
 
-    if (UMM_HEAP == NULL) {
-        umm_init();
-    }
+    UMM_CHECK_INITIALIZED();
 
     /* If we're being asked to free a NULL pointer, well that's just silly! */
 
@@ -501,9 +499,7 @@ void *umm_malloc(size_t size) {
 
     void *ptr = NULL;
 
-    if (UMM_HEAP == NULL) {
-        umm_init();
-    }
+    UMM_CHECK_INITIALIZED();
 
     /*
      * the very first thing we do is figure out if we're being asked to allocate
@@ -542,9 +538,7 @@ void *umm_realloc(void *ptr, size_t size) {
 
     size_t curSize;
 
-    if (UMM_HEAP == NULL) {
-        umm_init();
-    }
+    UMM_CHECK_INITIALIZED();
 
     /*
      * This code looks after the case of a NULL value for ptr. The ANSI C

@@ -37,10 +37,6 @@
  * sure that the configuration makes sense. For example the UMM_BLOCK_BODY_SIZE
  * is a minimum of 8 and a multiple of 4.
  *
- * UMM_TEST_BUILD
- *
- * Set this if you want to compile in the test suite
- *
  * UMM_BLOCK_BODY_SIZE
  *
  * Defines the umm_block[].body size - it is 8 by default
@@ -82,6 +78,16 @@
  * Setting this at compile time will automatically set UMM_INFO.
  * Note that enabling this define will add a slight runtime penalty.
  *
+ * UMM_CHECK_INITIALIZED
+ *
+ * Set if you want to be able to verify that the heap is intialized
+ * before any operation - the default is no check. You may set the
+ * UMM_CHECK_INITIALIZED macro to the following provided macros, or
+ * write your own handler:
+ *
+ *    UMM_INIT_IF_UNINITIALIZED
+ *    UMM_HANG_IF_UNINITIALIZED
+ *
  * UMM_INTEGRITY_CHECK
  *
  * Set if you want to be able to verify that the heap is semantically correct
@@ -106,6 +112,9 @@
  * Set n to a value from 0 to 6 depending on how verbose you want the debug
  * log to be
  *
+ * UMM_TEST_BUILD
+ *
+ * Set this if you want to compile in the test suite
  * ----------------------------------------------------------------------------
  *
  * Support for this library in a multitasking environment is provided when
@@ -125,6 +134,20 @@
 
 #define UMM_H_ATTPACKPRE
 #define UMM_H_ATTPACKSUF __attribute__((__packed__))
+
+/* -------------------------------------------------------------------------- */
+
+#ifndef UMM_INIT_IF_UNINITIALIZED
+    #define UMM_INIT_IF_UNINITIALIZED() do { if (UMM_HEAP == NULL) { umm_init(); } } while(0)
+#endif
+
+#ifndef UMM_HANG_IF_UNINITIALIZED
+    #define UMM_HANG_IF_UNINITIALIZED() do { if (UMM_HEAP == NULL) { while(1) {} } } while(0)
+#endif
+
+#ifndef UMM_CHECK_INITIALIZED
+    #define UMM_CHECK_INITIALIZED()
+#endif
 
 /* -------------------------------------------------------------------------- */
 

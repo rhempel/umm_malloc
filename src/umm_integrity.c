@@ -31,9 +31,7 @@ bool umm_integrity_check(void) {
     uint16_t prev;
     uint16_t cur;
 
-    if (UMM_HEAP == NULL) {
-        umm_init();
-    }
+    UMM_CHECK_INITIALIZED();
 
     /* Iterate through all free blocks */
     prev = 0;
