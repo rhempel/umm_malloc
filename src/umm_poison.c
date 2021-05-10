@@ -204,12 +204,16 @@ void umm_poison_free(void *ptr) {
  */
 
 bool umm_poison_check(void) {
+    UMM_CRITICAL_DECL(id_poison);
+
     bool ok = true;
     unsigned short int cur;
 
     if (umm_heap == NULL) {
         umm_init();
     }
+
+    UMM_CRITICAL_ENTRY(id_poison);
 
     /* Now iterate through the blocks list */
     cur = UMM_NBLOCK(0) & UMM_BLOCKNO_MASK;
@@ -225,6 +229,7 @@ bool umm_poison_check(void) {
 
         cur = UMM_NBLOCK(cur) & UMM_BLOCKNO_MASK;
     }
+    UMM_CRITICAL_EXIT(id_poison);
 
     return ok;
 }

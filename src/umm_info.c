@@ -24,6 +24,8 @@
 UMM_HEAP_INFO ummHeapInfo;
 
 void *umm_info(void *ptr, bool force) {
+    UMM_CRITICAL_DECL(id_info);
+
     if (umm_heap == NULL) {
         umm_init();
     }
@@ -31,7 +33,7 @@ void *umm_info(void *ptr, bool force) {
     uint16_t blockNo = 0;
 
     /* Protect the critical section... */
-    UMM_CRITICAL_ENTRY();
+    UMM_CRITICAL_ENTRY(id_info);
 
     /*
      * Clear out all of the entries in the ummHeapInfo structure before doing
@@ -89,7 +91,7 @@ void *umm_info(void *ptr, bool force) {
             if (ptr == &UMM_BLOCK(blockNo)) {
 
                 /* Release the critical section... */
-                UMM_CRITICAL_EXIT();
+                UMM_CRITICAL_EXIT(id_info);
 
                 return ptr;
             }
@@ -152,7 +154,7 @@ void *umm_info(void *ptr, bool force) {
     DBGLOG_FORCE(force, "+--------------------------------------------------------------+\n");
 
     /* Release the critical section... */
-    UMM_CRITICAL_EXIT();
+    UMM_CRITICAL_EXIT(id_info);
 
     return NULL;
 }

@@ -179,10 +179,18 @@ extern int umm_fragmentation_metric(void);
 #endif
 
 /*
- * A couple of macros to make it easier to protect the memory allocator
- * in a multitasking system. You should set these macros up to use whatever
- * your system uses for this purpose. You can disable interrupts entirely, or
- * just disable task switching - it's up to you
+ * Three macros to make it easier to protect the memory allocator in a
+ * multitasking system. You should set these macros up to use whatever your
+ * system uses for this purpose. You can disable interrupts entirely, or just
+ * disable task switching - it's up to you
+ *
+ * If needed, UMM_CRITICAL_DECL can be used to declare or initialize
+ * synchronization elements before their use. "tag" can be used to add context
+ * uniqueness to the declaration.
+ *   exp.  #define UMM_CRITICAL_DECL(tag) uint32_t _saved_ps_##tag
+ * Another possible use for "tag", activity identifier when profiling time
+ * spent in UMM_CRITICAL. The "tag" values used are id_malloc, id_realloc,
+ * id_free, id_poison, id_integrity, and id_info.
  *
  * NOTE WELL that these macros MUST be allowed to nest, because umm_free() is
  * called from within umm_malloc()
@@ -191,16 +199,18 @@ extern int umm_fragmentation_metric(void);
 #ifdef UMM_TEST_BUILD
 extern int umm_critical_depth;
 extern int umm_max_critical_depth;
-    #define UMM_CRITICAL_ENTRY() { \
+    #define UMM_CRITICAL_DECL(tag)
+    #define UMM_CRITICAL_ENTRY(tag) { \
         ++umm_critical_depth; \
         if (umm_critical_depth > umm_max_critical_depth) { \
             umm_max_critical_depth = umm_critical_depth; \
         } \
-}
-    #define UMM_CRITICAL_EXIT()  (umm_critical_depth--)
+    }
+    #define UMM_CRITICAL_EXIT(tag)  (umm_critical_depth--)
 #else
-    #define UMM_CRITICAL_ENTRY()
-    #define UMM_CRITICAL_EXIT()
+    #define UMM_CRITICAL_DECL(tag)
+    #define UMM_CRITICAL_ENTRY(tag)
+    #define UMM_CRITICAL_EXIT(tag)
 #endif
 
 /*
