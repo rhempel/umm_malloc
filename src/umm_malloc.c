@@ -286,7 +286,7 @@ void umm_init(void) {
 
 /* ------------------------------------------------------------------------
  * Must be called only from within critical sections guarded by
- * UMM_CRITICAL_ENTRY() and UMM_CRITICAL_EXIT().
+ * UMM_CRITICAL_ENTRY(id) and UMM_CRITICAL_EXIT(id).
  */
 
 static void umm_free_core(void *ptr) {
@@ -340,6 +340,7 @@ static void umm_free_core(void *ptr) {
 /* ------------------------------------------------------------------------ */
 
 void umm_free(void *ptr) {
+    UMM_CRITICAL_DECL(id_free);
 
     if (umm_heap == NULL) {
         umm_init();
@@ -355,16 +356,16 @@ void umm_free(void *ptr) {
 
     /* Free the memory withing a protected critical section */
 
-    UMM_CRITICAL_ENTRY();
+    UMM_CRITICAL_ENTRY(id_free);
 
     umm_free_core(ptr);
 
-    UMM_CRITICAL_EXIT();
+    UMM_CRITICAL_EXIT(id_free);
 }
 
 /* ------------------------------------------------------------------------
  * Must be called only from within critical sections guarded by
- * UMM_CRITICAL_ENTRY() and UMM_CRITICAL_EXIT().
+ * UMM_CRITICAL_ENTRY(id) and UMM_CRITICAL_EXIT(id).
  */
 
 static void *umm_malloc_core(size_t size) {
@@ -479,6 +480,7 @@ static void *umm_malloc_core(size_t size) {
 /* ------------------------------------------------------------------------ */
 
 void *umm_malloc(size_t size) {
+    UMM_CRITICAL_DECL(id_malloc);
 
     void *ptr = NULL;
 
@@ -501,11 +503,11 @@ void *umm_malloc(size_t size) {
 
     /* Allocate the memory withing a protected critical section */
 
-    UMM_CRITICAL_ENTRY();
+    UMM_CRITICAL_ENTRY(id_malloc);
 
     ptr = umm_malloc_core(size);
 
-    UMM_CRITICAL_EXIT();
+    UMM_CRITICAL_EXIT(id_malloc);
 
     return ptr;
 }
@@ -513,6 +515,7 @@ void *umm_malloc(size_t size) {
 /* ------------------------------------------------------------------------ */
 
 void *umm_realloc(void *ptr, size_t size) {
+    UMM_CRITICAL_DECL(id_realloc);
 
     uint16_t blocks;
     uint16_t blockSize;
@@ -579,7 +582,7 @@ void *umm_realloc(void *ptr, size_t size) {
     curSize = (blockSize * sizeof(umm_block)) - (sizeof(((umm_block *)0)->header));
 
     /* Protect the critical section... */
-    UMM_CRITICAL_ENTRY();
+    UMM_CRITICAL_ENTRY(id_realloc);
 
     /* Now figure out if the previous and/or next blocks are free as well as
      * their sizes - this will help us to minimize special code later when we
@@ -696,7 +699,7 @@ void *umm_realloc(void *ptr, size_t size) {
     }
 
     /* Release the critical section... */
-    UMM_CRITICAL_EXIT();
+    UMM_CRITICAL_EXIT(id_realloc);
 
     return ptr;
 }

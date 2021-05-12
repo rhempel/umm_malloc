@@ -27,6 +27,7 @@
  * chain.
  */
 bool umm_integrity_check(void) {
+    UMM_CRITICAL_DECL(id_integrity);
     bool ok = true;
     uint16_t prev;
     uint16_t cur;
@@ -37,6 +38,7 @@ bool umm_integrity_check(void) {
 
     /* Iterate through all free blocks */
     prev = 0;
+    UMM_CRITICAL_ENTRY(id_integrity);
     while (1) {
         cur = UMM_NFREE(prev);
 
@@ -121,6 +123,7 @@ bool umm_integrity_check(void) {
     }
 
 clean:
+    UMM_CRITICAL_EXIT(id_integrity);
     if (!ok) {
         UMM_HEAP_CORRUPTION_CB();
     }
