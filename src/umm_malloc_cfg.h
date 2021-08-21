@@ -112,10 +112,14 @@
  * Set n to a value from 0 to 6 depending on how verbose you want the debug
  * log to be
  *
- * UMM_TEST_BUILD
+ * UMM_MAX_CRITICAL_DEPTH_CHECK=n
  *
- * Set this if you want to compile in the test suite
- * ----------------------------------------------------------------------------
+ * Set this if you want to compile in code to verify that the critical
+ * section maximum depth is not exceeded. If set, the value must be greater
+ * than 0.
+ *
+ * The critical depth checking is only needed if your target environment
+ * does not support reading and writing the current interrupt enable state.
  *
  * Support for this library in a multitasking environment is provided when
  * you add bodies to the UMM_CRITICAL_ENTRY and UMM_CRITICAL_EXIT macros
@@ -247,7 +251,7 @@ extern int umm_fragmentation_metric(void);
  * called from within umm_malloc()
  */
 
-#ifdef UMM_TEST_BUILD
+#ifdef UMM_MAX_CRITICAL_DEPTH_CHECK
 extern int umm_critical_depth;
 extern int umm_max_critical_depth;
     #define UMM_CRITICAL_ENTRY() { \
@@ -258,8 +262,12 @@ extern int umm_max_critical_depth;
 }
     #define UMM_CRITICAL_EXIT()  (umm_critical_depth--)
 #else
-    #define UMM_CRITICAL_ENTRY()
-    #define UMM_CRITICAL_EXIT()
+    #ifndef UMM_CRITICAL_ENTRY
+        #define UMM_CRITICAL_ENTRY()
+    #endif
+    #ifndef UMM_CRITICAL_EXIT
+        #define UMM_CRITICAL_EXIT()
+    #endif
 #endif
 
 /*
@@ -311,9 +319,9 @@ extern void umm_corruption(void);
  */
 
 #ifdef UMM_POISON_CHECK
-   #define UMM_POISON_SIZE_BEFORE (4)
-   #define UMM_POISON_SIZE_AFTER (4)
-   #define UMM_POISONED_BLOCK_LEN_TYPE uint16_t
+  #define UMM_POISON_SIZE_BEFORE (4)
+  #define UMM_POISON_SIZE_AFTER (4)
+  #define UMM_POISONED_BLOCK_LEN_TYPE uint16_t
 
 extern void *umm_poison_malloc(size_t size);
 extern void *umm_poison_calloc(size_t num, size_t size);
@@ -321,7 +329,7 @@ extern void *umm_poison_realloc(void *ptr, size_t size);
 extern void  umm_poison_free(void *ptr);
 extern bool  umm_poison_check(void);
 
-   #define POISON_CHECK() umm_poison_check()
+  #define POISON_CHECK() umm_poison_check()
 #else
   #define POISON_CHECK() (1)
 #endif

@@ -1,0 +1,12 @@
+:defines:
+  # in order to add common defines:
+  #  1) remove the trailing [] from the :common: section
+  #  2) add entries to the :common: section (e.g. :test: has TEST defined)
+  :common: &common_defines
+    - UMM_INLINE_METRICS
+
+  :test:
+    - *common_defines
+
+  :test_preprocess:
+    - *common_defines

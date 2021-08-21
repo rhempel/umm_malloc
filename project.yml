@@ -14,7 +14,8 @@
   :test_file_prefix: test_
   :default_tasks:
     - test:all
-
+  :options_paths:
+    - test/options
 #:test_build:
 #  :use_assembly: TRUE
 
@@ -41,12 +42,6 @@
   #  1) remove the trailing [] from the :common: section
   #  2) add entries to the :common: section (e.g. :test: has TEST defined)
   :common: &common_defines
-    - TEST
-    - UMM_INFO
-    - UMM_TEST_BUILD
-    - UMM_INTEGRITY_CHECK
-    - UMM_POISON_CHECK
-    - UMM_CFGFILE="<umm_malloc_cfgport.h>"
 
   :test:
     - *common_defines

@@ -23,6 +23,24 @@
 
 UMM_HEAP_INFO ummHeapInfo;
 
+void compute_usage_metric(void)
+{
+    if (0 == ummHeapInfo.freeBlocks) {
+        ummHeapInfo.usage_metric = -1;        // No free blocks!
+    } else {
+        ummHeapInfo.usage_metric = (int)((ummHeapInfo.usedBlocks * 100) / (ummHeapInfo.freeBlocks));
+    }
+}
+
+void compute_fragmentation_metric(void)
+{
+    if (0 == ummHeapInfo.freeBlocks) {
+        ummHeapInfo.fragmentation_metric = 0; // No free blocks ... so no fragmentation either!
+    } else {
+        ummHeapInfo.fragmentation_metric = 100 - (((uint32_t)(sqrtf(ummHeapInfo.freeBlocksSquared)) * 100) / (ummHeapInfo.freeBlocks));
+    }
+}
+
 void *umm_info(void *ptr, bool force) {
     uint16_t blockNo = 0;
 
@@ -136,15 +154,10 @@ void *umm_info(void *ptr, bool force) {
 
     DBGLOG_FORCE(force, "+--------------------------------------------------------------+\n");
 
-    if (0 == ummHeapInfo.freeBlocks) {
-        ummHeapInfo.usage_metric = -1;        // No free blocks!
-        ummHeapInfo.fragmentation_metric = 0; // ... so no fragmentation either!
-    } else {
-        ummHeapInfo.usage_metric = (int)((ummHeapInfo.usedBlocks * 100) / (ummHeapInfo.freeBlocks));
-        ummHeapInfo.fragmentation_metric = 100 - (((uint32_t)(sqrtf(ummHeapInfo.freeBlocksSquared)) * 100) / (ummHeapInfo.freeBlocks));
-    }
-
+    compute_usage_metric();
     DBGLOG_FORCE(force, "Usage Metric:               %5i\n", ummHeapInfo.usage_metric);
+
+    compute_fragmentation_metric();
     DBGLOG_FORCE(force, "Fragmentation Metric:       %5i\n", ummHeapInfo.fragmentation_metric);
 
     DBGLOG_FORCE(force, "+--------------------------------------------------------------+\n");
@@ -170,7 +183,9 @@ size_t umm_max_free_block_size(void) {
 }
 
 int umm_usage_metric(void) {
-    #ifndef UMM_INLINE_METRICS
+    #ifdef UMM_INLINE_METRICS
+    compute_usage_metric();
+    #else
     umm_info(NULL, false);
     #endif
     DBGLOG_DEBUG("usedBlocks %i totalBlocks %i\n", ummHeapInfo.usedBlocks, ummHeapInfo.totalBlocks);
@@ -179,7 +194,9 @@ int umm_usage_metric(void) {
 }
 
 int umm_fragmentation_metric(void) {
-    #ifndef UMM_INLINE_METRICS
+    #ifdef UMM_INLINE_METRICS
+    compute_fragmentation_metric();
+    #else
     umm_info(NULL, false);
     #endif
     DBGLOG_DEBUG("freeBlocks %i freeBlocksSquared %i\n", ummHeapInfo.freeBlocks, ummHeapInfo.freeBlocksSquared);
