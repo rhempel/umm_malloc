@@ -57,7 +57,7 @@ struct umm_test_functions {
     bool (*umm_test_check)(void);
 };
 
-extern struct umm_test_functions umm_test_poison;
+extern struct umm_test_functions umm_test_functions;
 
 extern uint64_t stress_test(int, struct umm_test_functions *);
 

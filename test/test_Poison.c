@@ -25,11 +25,11 @@ void tearDown(void) {
 
 #ifdef UMM_POISON_CHECK
 void testPoisonFirst(void) {
-    TEST_ASSERT_NOT_NULL(umm_test_poison.umm_test_malloc(UMM_FIRST_BLOCK_BODY_SIZE));
+    TEST_ASSERT_NOT_NULL(umm_test_functions.umm_test_malloc(UMM_FIRST_BLOCK_BODY_SIZE));
 }
 
 void testPoisonClobberLeading(void) {
-    void *p = umm_test_poison.umm_test_malloc(UMM_BLOCK_BODY_SIZE * 8);
+    void *p = umm_test_functions.umm_test_malloc(UMM_BLOCK_BODY_SIZE * 8);
 
     p = p - 1;
     *(char *)p = 0x00;
@@ -38,7 +38,7 @@ void testPoisonClobberLeading(void) {
 }
 
 void testPoisonClobberTrailing(void) {
-    void *p = umm_test_poison.umm_test_malloc(UMM_BLOCK_BODY_SIZE * 8);
+    void *p = umm_test_functions.umm_test_malloc(UMM_BLOCK_BODY_SIZE * 8);
 
     p = p + UMM_BLOCK_BODY_SIZE * 8;
     *(char *)p = 0x00;
@@ -67,10 +67,10 @@ void testPoisonRandom(void) {
         s = rand32() % 64;
 
         if (p[j]) {
-            umm_test_poison.umm_test_free(p[j]);
+            umm_test_functions.umm_test_free(p[j]);
         }
 
-        p[j] = umm_test_poison.umm_test_malloc(normalize_allocation_size(s));
+        p[j] = umm_test_functions.umm_test_malloc(normalize_allocation_size(s));
 
         if (0 == s) {
             TEST_ASSERT_NULL(p[j]);
@@ -81,14 +81,13 @@ void testPoisonRandom(void) {
 }
 
 void testPoisonStress(void) {
-    uint64_t t = stress_test(100 * 1000, &umm_test_poison);
+    uint64_t t = stress_test(100 * 1000, &umm_test_functions);
 
     umm_info(0, true);
-    DBGLOG_FORCE(true, "Free Heap Size:    %ld\n", umm_free_heap_size());
-    DBGLOG_FORCE(true, "Typical Time (usec): %lf\n", (double)t / ((100 * 1000)));
+    DBGLOG_FORCE(true, "Free Heap Size:    %d\n", umm_free_heap_size());
+    DBGLOG_FORCE(true, "Typical Time (usec): %f\n", (double)t / ((100 * 1000)));
 }
 
-#ifdef UMM_POISON_CHECK
 void testPoisonStressLoop(void) {
     int i;
     uint64_t t = 0;
@@ -96,13 +95,12 @@ void testPoisonStressLoop(void) {
 
     for (i = 0; i < 4; ++i) {
         umm_init();
-        t = stress_test(100 * 1000, &umm_test_poison);
+        t = stress_test(100 * 1000, &umm_test_functions);
         umm_info(0, false);
-        DBGLOG_FORCE(true, "Free Heap Size:      %ld\n", umm_free_heap_size());
-        DBGLOG_FORCE(true, "Typical Time (usec): %lf\n", (double)t / ((100 * 1000)));
+        DBGLOG_FORCE(true, "Free Heap Size:      %d\n", umm_free_heap_size());
+        DBGLOG_FORCE(true, "Typical Time (usec): %f\n", (double)t / ((100 * 1000)));
         total += t;
     }
 
-    DBGLOG_FORCE(true, "Typical Time (usec): %lf\n", (double)total / (4 * (100 * 1000)));
+    DBGLOG_FORCE(true, "Typical Time (usec): %f\n", (double)total / (4 * (100 * 1000)));
 }
-#endif
