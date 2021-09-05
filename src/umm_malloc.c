@@ -323,7 +323,7 @@ static void umm_free_core(void *ptr) {
 
     /* Figure out which block we're in. Note the use of truncated division... */
 
-    c = (((void *)ptr) - (void *)(&(UMM_HEAP[0]))) / UMM_BLOCKSIZE;
+    c = (((uint8_t *)ptr) - (uint8_t *)(&(UMM_HEAP[0]))) / UMM_BLOCKSIZE;
 
     DBGLOG_DEBUG("Freeing block %6i\n", c);
 
@@ -581,7 +581,7 @@ void *umm_realloc(void *ptr, size_t size) {
 
     /* Figure out which block we're in. Note the use of truncated division... */
 
-    c = (((void *)ptr) - (void *)(&(UMM_HEAP[0]))) / UMM_BLOCKSIZE;
+    c = (((uint8_t *)ptr) - (uint8_t *)(&(UMM_HEAP[0]))) / UMM_BLOCKSIZE;
 
     /* Figure out how big this block is ... the free bit is not set :-) */
 
