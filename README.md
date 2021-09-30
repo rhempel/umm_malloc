@@ -64,6 +64,11 @@ We can also call `umm_init_heap(void *pheap, size_t size)` where the
 heap details are passed in manually. This is useful in systems where
 you can allocate a block of memory at run time - for example in Rust.
 
+Please note that the heap can have a maximum size of `UMM_BLOCKSIZE` * 32767,
+so 262136 bytes with the default block size of 8 (see
+[Background](#Background) for details). In case the limit is exceeded,
+`umm_init_heap` will fail on an assert.
+
 > :black_square_button: Future development may allow for multiple heaps
 
 ## Automated Testing

@@ -37,9 +37,10 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "umm_malloc_cfg.h"   // Override with umm_malloc_cfg_xxx.h
@@ -247,6 +248,9 @@ static uint16_t umm_assimilate_down(uint16_t c, uint16_t freemask) {
 
 void umm_init_heap(void *ptr, size_t size)
 {
+    /* 15 bits are used for addressing blocks, which limits the heap size */
+    assert(size <= UMM_BLOCKSIZE * 32767);
+
     /* init heap pointer and size, and memset it to 0 */
     UMM_HEAP = (umm_block *)ptr;
     UMM_HEAPSIZE = size;
