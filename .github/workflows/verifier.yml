@@ -1,0 +1,16 @@
+name: verifier
+on: [pull_request]
+jobs:
+  multi_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 3.0.2
+
+      - name: Install ceedling
+        run: gem install ceedling
+
+      - name: Run multi-configuration tests
+        run: ./multitest.sh
