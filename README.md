@@ -1,3 +1,5 @@
+[![verifier](https://github.com/rhempel/umm_malloc/actions/workflows/verifier.yml/badge.svg?branch=master&event=workflow_dispatch)](https://github.com/rhempel/umm_malloc/actions/workflows/verifier.yml)
+
 # umm_malloc - Memory Manager For Small(ish) Microprocessors
 
 This is a memory management library specifically designed to work with the
