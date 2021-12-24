@@ -275,10 +275,10 @@ extern int umm_max_critical_depth;
         #define UMM_CRITICAL_DECL(tag)
     #endif
     #ifndef UMM_CRITICAL_ENTRY
-        #define UMM_CRITICAL_ENTRY()
+        #define UMM_CRITICAL_ENTRY(tag)
     #endif
     #ifndef UMM_CRITICAL_EXIT
-        #define UMM_CRITICAL_EXIT()
+        #define UMM_CRITICAL_EXIT(tag)
     #endif
 #endif
 
