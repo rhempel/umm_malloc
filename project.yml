@@ -14,7 +14,8 @@
   :test_file_prefix: test_
   :default_tasks:
     - test:all
-
+  :options_paths:
+    - test/options
 #:test_build:
 #  :use_assembly: TRUE
 
@@ -41,20 +42,12 @@
   #  1) remove the trailing [] from the :common: section
   #  2) add entries to the :common: section (e.g. :test: has TEST defined)
   :common: &common_defines []
+
   :test:
     - *common_defines
-    - TEST
-    - UMM_INFO
-    - UMM_TEST_BUILD
-    - UMM_INTEGRITY_CHECK
-    - UMM_POISON_CHECK
+
   :test_preprocess:
     - *common_defines
-    - TEST
-    - UMM_INFO
-    - UMM_TEST_BUILD
-    - UMM_INTEGRITY_CHECK
-    - UMM_POISON_CHECK
 
 :cmock:
   :mock_prefix: mock_
@@ -73,12 +66,12 @@
 # Add -gcov to the plugins list to make sure of the gcov plugin
 # You will need to have gcov and gcovr both installed to make it work.
 # For more information on these options, see docs in plugins/gcov
-# :gcov:
-#     :html_report: TRUE
-#     :html_report_type: detailed
-#     :html_medium_threshold: 75
-#     :html_high_threshold: 90
-#     :xml_report: FALSE
+:gcov:
+    :html_report: TRUE
+    :html_report_type: detailed
+    :html_medium_threshold: 75
+    :html_high_threshold: 90
+    :xml_report: FALSE
 
 #:tools:
 # Ceedling defaults to using gcc for compiling, linking, etc.
@@ -102,4 +95,5 @@
     - stdout_pretty_tests_report
     - module_generator
     - raw_output_report
+    - gcov
 ...

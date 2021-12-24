@@ -137,7 +137,7 @@ uint32_t rand32(void) {
 #define STRESS_TEST_ENTRIES (256)
 
 #ifdef UMM_POISON_CHECK
-struct umm_test_functions umm_test_poison = {
+struct umm_test_functions umm_test_functions = {
     umm_poison_malloc,
     umm_poison_calloc,
     umm_poison_realloc,
@@ -149,7 +149,7 @@ bool  umm_check(void) {
     return true;
 }
 
-struct umm_test_functions umm_test_poison = {
+struct umm_test_functions umm_test_functions = {
     umm_malloc,
     umm_calloc,
     umm_realloc,

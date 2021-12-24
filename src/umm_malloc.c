@@ -33,6 +33,7 @@
  * R.Hempel 2020-01-20 - Move metric functions back to umm_info - See Issue 29
  * R.Hempel 2020-02-01 - Macro functions are uppercased - See Issue 34
  * R.Hempel 2020-06-20 - Support alternate body size - See Issue 42
+ * R.Hempel 2021-05-02 - Support explicit memory umm_init_heap() - See Issue 53
  * ----------------------------------------------------------------------------
  */
 
@@ -41,7 +42,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "umm_malloc_cfg.h"   /* user-dependent */
+#include "umm_malloc_cfg.h"   // Override with umm_malloc_cfg_xxx.h
 #include "umm_malloc.h"
 
 /* Use the default DBGLOG_LEVEL and DBGLOG_FUNCTION */
@@ -79,17 +80,27 @@ UMM_H_ATTPACKPRE typedef struct umm_block_t {
 
 /* ------------------------------------------------------------------------- */
 
-umm_block *umm_heap = NULL;
-uint16_t umm_numblocks = 0;
+struct umm_heap_config {
+    umm_block *pheap;
+    size_t heap_size;
+    uint16_t numblocks;
+};
 
-#define UMM_NUMBLOCKS  (umm_numblocks)
+struct umm_heap_config umm_heap_current;
+// struct umm_heap_config umm_heaps[UMM_NUM_HEAPS];
+
+#define UMM_HEAP       (umm_heap_current.pheap)
+#define UMM_HEAPSIZE   (umm_heap_current.heap_size)
+#define UMM_NUMBLOCKS  (umm_heap_current.numblocks)
+
+#define UMM_BLOCKSIZE  (sizeof(umm_block))
 #define UMM_BLOCK_LAST (UMM_NUMBLOCKS - 1)
 
 /* -------------------------------------------------------------------------
  * These macros evaluate to the address of the block and data respectively
  */
 
-#define UMM_BLOCK(b)  (umm_heap[b])
+#define UMM_BLOCK(b)  (UMM_HEAP[b])
 #define UMM_DATA(b)   (UMM_BLOCK(b).body.data)
 
 /* -------------------------------------------------------------------------
@@ -124,6 +135,24 @@ static uint16_t umm_blocks(size_t size) {
      * When a block removed from the free list, the space used by the free
      * pointers is available for data. That's what the first calculation
      * of size is doing.
+     *
+     * We don't check for the special case of (size == 0) here as this needs
+     * special handling in the caller depending on context. For example when we
+     * realloc() a block to size 0 it should simply be freed.
+     *
+     * We do NOT need to check for allocating more blocks than the heap can
+     * possibly hold - the allocator figures this out for us.
+     *
+     * There are only two cases left to consider:
+     *
+     * 1. (size <= body)  Obviously this is just one block
+     * 2. (blocks > (2^15)) This should return ((2^15)) to force a
+     *                      failure when the allocator runs
+     *
+     * If the requested size is greater that 32677-2 blocks (max block index
+     * minus the overhead of the top and bottom bookkeeping blocks) then we
+     * will return an incorrectly truncated value when the result is cast to
+     * a uint16_t.
      */
 
     if (size <= (sizeof(((umm_block *)0)->body))) {
@@ -132,12 +161,33 @@ static uint16_t umm_blocks(size_t size) {
 
     /*
      * If it's for more than that, then we need to figure out the number of
-     * additional whole blocks the size of an umm_block are required.
+     * additional whole blocks the size of an umm_block are required, so
+     * reduce the size request by the number of bytes in the body of the
+     * first block.
      */
 
-    size -= (1 + (sizeof(((umm_block *)0)->body)));
+    size -= (sizeof(((umm_block *)0)->body));
 
-    return 2 + size / (sizeof(umm_block));
+    /* NOTE WELL that we take advantage of the fact that INT16_MAX is the
+     * number of blocks that we can index in 15 bits :-)
+     *
+     * The below expression looks wierd, but it's right. Assuming body
+     * size of 4 bytes and a block size of 8 bytes:
+     *
+     * BYTES (BYTES-BODY) (BYTES-BODY-1)/BLOCKSIZE BLOCKS
+     *     1        n/a                        n/a      1
+     *     5          1                          0      2
+     *    12          8                          0      2
+     *    13          9                          1      3
+     */
+
+    size_t blocks = (2 + ((size-1) / (UMM_BLOCKSIZE)));
+
+    if (blocks > (INT16_MAX)) {
+        blocks = INT16_MAX;
+    }
+
+    return (uint16_t)blocks;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -234,11 +284,13 @@ static uint16_t umm_assimilate_down(uint16_t c, uint16_t freemask) {
 
 /* ------------------------------------------------------------------------- */
 
-void umm_init(void) {
+void umm_init_heap(void *ptr, size_t size)
+{
     /* init heap pointer and size, and memset it to 0 */
-    umm_heap = (umm_block *)UMM_MALLOC_CFG_HEAP_ADDR;
-    umm_numblocks = (UMM_MALLOC_CFG_HEAP_SIZE / sizeof(umm_block));
-    memset(umm_heap, 0x00, UMM_MALLOC_CFG_HEAP_SIZE);
+    UMM_HEAP = (umm_block *)ptr;
+    UMM_HEAPSIZE = size;
+    UMM_NUMBLOCKS = (UMM_HEAPSIZE / UMM_BLOCKSIZE);
+    memset(UMM_HEAP, 0x00, UMM_HEAPSIZE);
 
     /* setup initial blank heap structure */
     UMM_FRAGMENTATION_METRIC_INIT();
@@ -284,6 +336,12 @@ void umm_init(void) {
 
 }
 
+void umm_init(void) {
+    /* Initialize the heap from linker supplied values */
+
+    umm_init_heap(UMM_MALLOC_CFG_HEAP_ADDR, UMM_MALLOC_CFG_HEAP_SIZE);
+}
+
 /* ------------------------------------------------------------------------
  * Must be called only from within critical sections guarded by
  * UMM_CRITICAL_ENTRY(id) and UMM_CRITICAL_EXIT(id).
@@ -304,7 +362,7 @@ static void umm_free_core(void *ptr) {
 
     /* Figure out which block we're in. Note the use of truncated division... */
 
-    c = (((void *)ptr) - (void *)(&(umm_heap[0]))) / sizeof(umm_block);
+    c = (((uint8_t *)ptr) - (uint8_t *)(&(UMM_HEAP[0]))) / UMM_BLOCKSIZE;
 
     DBGLOG_DEBUG("Freeing block %6i\n", c);
 
@@ -342,9 +400,7 @@ static void umm_free_core(void *ptr) {
 void umm_free(void *ptr) {
     UMM_CRITICAL_DECL(id_free);
 
-    if (umm_heap == NULL) {
-        umm_init();
-    }
+    UMM_CHECK_INITIALIZED();
 
     /* If we're being asked to free a NULL pointer, well that's just silly! */
 
@@ -484,9 +540,7 @@ void *umm_malloc(size_t size) {
 
     void *ptr = NULL;
 
-    if (umm_heap == NULL) {
-        umm_init();
-    }
+    UMM_CHECK_INITIALIZED();
 
     /*
      * the very first thing we do is figure out if we're being asked to allocate
@@ -526,9 +580,7 @@ void *umm_realloc(void *ptr, size_t size) {
 
     size_t curSize;
 
-    if (umm_heap == NULL) {
-        umm_init();
-    }
+    UMM_CHECK_INITIALIZED();
 
     /*
      * This code looks after the case of a NULL value for ptr. The ANSI C
@@ -571,7 +623,7 @@ void *umm_realloc(void *ptr, size_t size) {
 
     /* Figure out which block we're in. Note the use of truncated division... */
 
-    c = (((void *)ptr) - (void *)(&(umm_heap[0]))) / sizeof(umm_block);
+    c = (((uint8_t *)ptr) - (uint8_t *)(&(UMM_HEAP[0]))) / UMM_BLOCKSIZE;
 
     /* Figure out how big this block is ... the free bit is not set :-) */
 
@@ -579,7 +631,7 @@ void *umm_realloc(void *ptr, size_t size) {
 
     /* Figure out how many bytes are in this block */
 
-    curSize = (blockSize * sizeof(umm_block)) - (sizeof(((umm_block *)0)->header));
+    curSize = (blockSize * UMM_BLOCKSIZE) - (sizeof(((umm_block *)0)->header));
 
     /* Protect the critical section... */
     UMM_CRITICAL_ENTRY(id_realloc);

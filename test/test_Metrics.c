@@ -49,8 +49,10 @@ void testMetricsEmpty(void) {
     #ifdef UMM_INLINE_METRICS
     TEST_ASSERT_EQUAL(0, umm_fragmentation_metric());
     #endif
+    #ifdef UMM_INFO
     umm_info(0, false);
     TEST_ASSERT_EQUAL(0, umm_fragmentation_metric());
+    #endif
 }
 
 void testMetricsFull(void) {
@@ -66,8 +68,10 @@ void testMetricsFull(void) {
     #ifdef UMM_INLINE_METRICS
     TEST_ASSERT_EQUAL(0, umm_fragmentation_metric());
     #endif
+    #ifdef UMM_INFO
     umm_info(0, false);
     TEST_ASSERT_EQUAL(0, umm_fragmentation_metric());
+    #endif
 }
 
 void testMetricsSparseFull(void) {
@@ -87,8 +91,10 @@ void testMetricsSparseFull(void) {
     #ifdef UMM_INLINE_METRICS
     TEST_ASSERT_EQUAL(99, umm_fragmentation_metric());
     #endif
+    #ifdef UMM_INFO
     umm_info(0, false);
     TEST_ASSERT_EQUAL(99, umm_fragmentation_metric());
+    #endif
 }
 
 void testMetricsSparse7of8(void) {
@@ -108,8 +114,10 @@ void testMetricsSparse7of8(void) {
     #ifdef UMM_INLINE_METRICS
     TEST_ASSERT_EQUAL(78, umm_fragmentation_metric());
     #endif
+    #ifdef UMM_INFO
     umm_info(0, false);
     TEST_ASSERT_EQUAL(78, umm_fragmentation_metric());
+    #endif
 }
 
 void testMetricsSparse3of4(void) {
@@ -129,8 +137,10 @@ void testMetricsSparse3of4(void) {
     #ifdef UMM_INLINE_METRICS
     TEST_ASSERT_EQUAL(61, umm_fragmentation_metric());
     #endif
+    #ifdef UMM_INFO
     umm_info(0, false);
     TEST_ASSERT_EQUAL(61, umm_fragmentation_metric());
+    #endif
 }
 
 void testMetricsSparse1of2(void) {
@@ -150,8 +160,10 @@ void testMetricsSparse1of2(void) {
     #ifdef UMM_INLINE_METRICS
     TEST_ASSERT_EQUAL(34, umm_fragmentation_metric());
     #endif
+    #ifdef UMM_INFO
     umm_info(0, false);
     TEST_ASSERT_EQUAL(34, umm_fragmentation_metric());
+    #endif
 }
 
 void testMetricsSparse1of4(void) {
@@ -171,8 +183,10 @@ void testMetricsSparse1of4(void) {
     #ifdef UMM_INLINE_METRICS
     TEST_ASSERT_EQUAL(15, umm_fragmentation_metric());
     #endif
+    #ifdef UMM_INFO
     umm_info(0, false);
     TEST_ASSERT_EQUAL(15, umm_fragmentation_metric());
+    #endif
 }
 
 void testMetricsSparse1of8(void) {
@@ -192,6 +206,8 @@ void testMetricsSparse1of8(void) {
     #ifdef UMM_INLINE_METRICS
     TEST_ASSERT_EQUAL(7, umm_fragmentation_metric());
     #endif
+    #ifdef UMM_INFO
     umm_info(0, false);
     TEST_ASSERT_EQUAL(7, umm_fragmentation_metric());
+    #endif
 }

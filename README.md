@@ -1,3 +1,5 @@
+[![verifier](https://github.com/rhempel/umm_malloc/actions/workflows/verifier.yml/badge.svg?branch=master&event=workflow_dispatch)](https://github.com/rhempel/umm_malloc/actions/workflows/verifier.yml)
+
 # umm_malloc - Memory Manager For Small(ish) Microprocessors
 
 This is a memory management library specifically designed to work with the
@@ -44,13 +46,31 @@ in umm_malloc.
 
 ## Usage
 
-This library is designed to be included in your application as you
-see fit - but it's easiest if you do NOT touch the `umm_malloc_cfg.h`
-file and use the `-D` directive in your compiler to configure the
-library for different modes. Read the notes in `umm_malloc_cfg.h` for
-details.
+This library is designed to be included in your application as a
+submodule that has default configuration that can be overridden
+as needed by your application code.
 
-Note that `umm_malloc` is also designed to be testable in standalone
+The `umm_malloc` library can be initialized two ways. The first is
+at link time:
+
+- Set `UMM_MALLOC_CFG_HEAP_ADDR` to the symbol representing
+  the starting address of the heap. The heap must be
+  aligned on the natural boundary size of the processor.
+- Set `UMM_MALLOC_CFG_HEAP_SIZE` to the size of the heap in bytes.
+  The heap size must be a multiple of the natural boundary size of
+  the processor.
+
+This is how the `umm_init()` call handles initializing the heap.
+
+We can also call `umm_init_heap(void *pheap, size_t size)` where the
+heap details are passed in manually. This is useful in systems where
+you can allocate a block of memory at run time - for example in Rust.
+
+> :black_square_button: Future development may allow for multiple heaps
+
+## Automated Testing
+
+`umm_malloc` is designed to be testable in standalone
 mode using `ceedling`. To run the test suite, just make sure you have
 `ceedling` installed and then run:
 
@@ -59,15 +79,22 @@ ceedling clean
 ceedling test:all
 ```
 
-The following `#define`s must be set to something useful for the
-library to work at all
+## Configuration
 
-- `UMM_MALLOC_CFG_HEAP_ADDR` must be set to the symbol representing
-  the starting address of the heap. The heap must be
-  aligned on the natural boundary size of the processor.
-- `UMM_MALLOC_CFG_HEAP_SIZE` must be set to the size of the heap.
-  The heap size must be a multiple of the natural boundary size of
-  the processor.
+> :warning: **You MUST provide a file called `umm_malloc_cfgport.h`
+> somewhere in your app, even if it's blank**
+
+The reason for this is the way the configuration override heirarchy
+works. The priority for configuration overrides is as follows:
+
+1. Command line defines using `-D UMM_xxx`
+2. A custom config filename using `-D UMM_CFGFILE="<filename.cfg>"`
+3. The default config filename `umm_malloc_cfgport.h`
+4. The default configuration in `src/umm_malloc_cfg.h`
+
+
+The following `#define`s are set to useful defaults in
+`src/umm_malloc_cfg.h` and can be overridden as needed.
 
 The fit algorithm is defined as either:
 
@@ -82,9 +109,6 @@ remain disabled for production use. They are helpful when
 testing allocation errors (which are normally due to bugs in
 the application code) or for running the test suite when
 making changes to the code.
-
-You can define them in your compiler command line or uncomment
-the corresponding entries is `umm_malloc_cfg.h`:
 
 - `UMM_INFO` is used to include code that allows dumping
   the entire heap structure (helpful when there's a problem).
@@ -111,6 +135,11 @@ The following functions are available for your application:
 
 They have exactly the same semantics as the corresponding standard library
 functions.
+
+To initialize the library there are two options:
+
+- `void *umm_malloc( size_t size );`
+
  
 ## Background
 
