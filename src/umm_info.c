@@ -101,16 +101,6 @@ void *umm_info(void *ptr, bool force) {
                 (uint16_t)curBlocks,
                 UMM_NFREE(blockNo),
                 UMM_PFREE(blockNo));
-
-            /* Does this block address match the ptr we may be trying to free? */
-
-            if (ptr == &UMM_BLOCK(blockNo)) {
-
-                /* Release the critical section... */
-                UMM_CRITICAL_EXIT(id_info);
-
-                return ptr;
-            }
         } else {
             ++ummHeapInfo.usedEntries;
             ummHeapInfo.usedBlocks += curBlocks;
@@ -121,6 +111,16 @@ void *umm_info(void *ptr, bool force) {
                 UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK,
                 UMM_PBLOCK(blockNo),
                 (uint16_t)curBlocks);
+
+            /* Does this block address match the ptr we may be trying to free? */
+
+            if (ptr == &UMM_BLOCK(blockNo)) {
+
+                /* Release the critical section... */
+                UMM_CRITICAL_EXIT(id_info);
+
+                return ptr;
+            }
         }
 
         blockNo = UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK;
