@@ -136,8 +136,12 @@
 
 /* A couple of macros to make packing structures less compiler dependent */
 
-#define UMM_H_ATTPACKPRE
-#define UMM_H_ATTPACKSUF __attribute__((__packed__))
+#ifndef UMM_H_ATTPACKPRE
+    #define UMM_H_ATTPACKPRE
+#endif
+#ifndef UMM_H_ATTPACKSUF
+    #define UMM_H_ATTPACKSUF __attribute__((__packed__))
+#endif
 
 /* -------------------------------------------------------------------------- */
 
