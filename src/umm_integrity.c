@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+extern umm_heap umm_heap_current;
+
 /*
  * Perform integrity check of the whole heap data. Returns 1 in case of
  * success, 0 otherwise.
@@ -27,6 +29,10 @@
  * chain.
  */
 bool umm_integrity_check(void) {
+ return umm_multi_integrity_check(&umm_heap_current);
+}
+
+bool umm_multi_integrity_check(umm_heap* heap) {
     UMM_CRITICAL_DECL(id_integrity);
     bool ok = true;
     uint16_t prev;

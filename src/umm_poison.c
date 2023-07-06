@@ -6,6 +6,8 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+extern umm_heap umm_heap_current;
+
 /*
  * Yields a size of the poison for the block of size `s`.
  * If `s` is 0, returns 0.
@@ -124,7 +126,7 @@ static void *get_poisoned(void *ptr, size_t size_w_poison) {
  *
  * Returns unpoisoned pointer, i.e. actual pointer to the allocated memory.
  */
-static void *get_unpoisoned(void *ptr) {
+static void *get_unpoisoned(umm_heap *heap, void *ptr) {
     if (ptr != NULL) {
         uint16_t c;
 
@@ -144,6 +146,10 @@ static void *get_unpoisoned(void *ptr) {
 /* ------------------------------------------------------------------------ */
 
 void *umm_poison_malloc(size_t size) {
+    return umm_multi_poison_malloc(&umm_heap_current, size);
+}
+
+void *umm_multi_poison_malloc(umm_heap *heap, size_t size) {
     void *ret;
 
     size += poison_size(size);
@@ -158,6 +164,10 @@ void *umm_poison_malloc(size_t size) {
 /* ------------------------------------------------------------------------ */
 
 void *umm_poison_calloc(size_t num, size_t item_size) {
+    return umm_multi_poison_calloc(&umm_heap_current, num, item_size);
+}
+
+void *umm_multi_poison_calloc(umm_heap *heap, size_t num, size_t item_size) {
     void *ret;
     size_t size = item_size * num;
 
@@ -177,9 +187,13 @@ void *umm_poison_calloc(size_t num, size_t item_size) {
 /* ------------------------------------------------------------------------ */
 
 void *umm_poison_realloc(void *ptr, size_t size) {
+    return umm_multi_poison_realloc(&umm_heap_current, ptr, size);
+}
+
+void *umm_multi_poison_realloc(umm_heap *heap, void *ptr, size_t size) {
     void *ret;
 
-    ptr = get_unpoisoned(ptr);
+    ptr = get_unpoisoned(heap, ptr);
 
     size += poison_size(size);
     ret = umm_realloc(ptr, size);
@@ -192,8 +206,12 @@ void *umm_poison_realloc(void *ptr, size_t size) {
 /* ------------------------------------------------------------------------ */
 
 void umm_poison_free(void *ptr) {
+    umm_multi_poison_free(&umm_heap_current, ptr);
+}
 
-    ptr = get_unpoisoned(ptr);
+void umm_multi_poison_free(umm_heap *heap, void *ptr) {
+
+    ptr = get_unpoisoned(heap, ptr);
 
     umm_free(ptr);
 }
@@ -204,6 +222,10 @@ void umm_poison_free(void *ptr) {
  */
 
 bool umm_poison_check(void) {
+    return umm_multi_poison_check(&umm_heap_current);
+}
+
+bool umm_multi_poison_check(umm_heap *heap) {
     UMM_CRITICAL_DECL(id_poison);
 
     bool ok = true;

@@ -134,6 +134,9 @@
 #include <umm_malloc_cfgport.h>
 #endif
 
+/* Forward declaration of umm_heap_config */
+struct umm_heap_config;
+
 /* A couple of macros to make packing structures less compiler dependent */
 
 #ifndef UMM_H_ATTPACKPRE
@@ -198,6 +201,9 @@
 /* -------------------------------------------------------------------------- */
 
 #ifdef UMM_INLINE_METRICS
+  #define UMM_MULTI_FRAGMENTATION_METRIC_INIT(h) umm_multi_fragmentation_metric_init(h)
+  #define UMM_MULTI_FRAGMENTATION_METRIC_ADD(h,c) umm_multi_fragmentation_metric_add(h,c)
+  #define UMM_MULTI_FRAGMENTATION_METRIC_REMOVE(h,c) umm_multi_fragmentation_metric_remove(h,c)
   #define UMM_FRAGMENTATION_METRIC_INIT() umm_fragmentation_metric_init()
   #define UMM_FRAGMENTATION_METRIC_ADD(c) umm_fragmentation_metric_add(c)
   #define UMM_FRAGMENTATION_METRIC_REMOVE(c) umm_fragmentation_metric_remove(c)
@@ -232,12 +238,22 @@ UMM_HEAP_INFO;
 
 extern UMM_HEAP_INFO ummHeapInfo;
 
+extern void *umm_multi_info(struct umm_heap_config *heap, void *ptr, bool force);
+extern size_t umm_multi_free_heap_size(struct umm_heap_config *heap);
+extern size_t umm_multi_max_free_block_size(struct umm_heap_config *heap);
+extern int umm_multi_usage_metric(struct umm_heap_config *heap);
+extern int umm_multi_fragmentation_metric(struct umm_heap_config *heap);
 extern void *umm_info(void *ptr, bool force);
 extern size_t umm_free_heap_size(void);
 extern size_t umm_max_free_block_size(void);
 extern int umm_usage_metric(void);
 extern int umm_fragmentation_metric(void);
 #else
+  #define umm_multi_info(h,p,b)
+  #define umm_multi_free_heap_size(h) (0)
+  #define umm_multi_max_free_block_size(h) (0)
+  #define umm_multi_usage_metric(h) (0)
+  #define umm_multi_fragmentation_metric(h) (0)
   #define umm_info(p,b)
   #define umm_free_heap_size() (0)
   #define umm_max_free_block_size() (0)
@@ -303,6 +319,7 @@ extern int umm_max_critical_depth;
  */
 
 #ifdef UMM_INTEGRITY_CHECK
+extern bool umm_multi_integrity_check(struct umm_heap_config *heap);
 extern bool umm_integrity_check(void);
 #define INTEGRITY_CHECK() umm_integrity_check()
 extern void umm_corruption(void);
@@ -342,6 +359,12 @@ extern void umm_corruption(void);
   #define UMM_POISON_SIZE_BEFORE (4)
   #define UMM_POISON_SIZE_AFTER (4)
   #define UMM_POISONED_BLOCK_LEN_TYPE uint16_t
+
+extern void *umm_multi_poison_malloc(struct umm_heap_config *heap, size_t size);
+extern void *umm_multi_poison_calloc(struct umm_heap_config *heap, size_t num, size_t size);
+extern void *umm_multi_poison_realloc(struct umm_heap_config *heap, void *ptr, size_t size);
+extern void  umm_multi_poison_free(struct umm_heap_config *heap, void *ptr);
+extern bool  umm_multi_poison_check(struct umm_heap_config *heap);
 
 extern void *umm_poison_malloc(size_t size);
 extern void *umm_poison_calloc(size_t num, size_t size);

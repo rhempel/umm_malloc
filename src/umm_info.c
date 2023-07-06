@@ -23,6 +23,8 @@
 
 UMM_HEAP_INFO ummHeapInfo;
 
+extern umm_heap umm_heap_current;
+
 void compute_usage_metric(void)
 {
     if (0 == ummHeapInfo.freeBlocks) {
@@ -42,6 +44,10 @@ void compute_fragmentation_metric(void)
 }
 
 void *umm_info(void *ptr, bool force) {
+    return umm_multi_info(&umm_heap_current, ptr, force);
+}
+
+void *umm_multi_info(umm_heap* heap, void *ptr, bool force) {
     uint16_t blockNo = 0;
 
     UMM_CRITICAL_DECL(id_info);
@@ -173,22 +179,34 @@ void *umm_info(void *ptr, bool force) {
 /* ------------------------------------------------------------------------ */
 
 size_t umm_free_heap_size(void) {
+    return umm_multi_free_heap_size(&umm_heap_current);
+}
+
+size_t umm_multi_free_heap_size(umm_heap *heap) {
     #ifndef UMM_INLINE_METRICS
-    umm_info(NULL, false);
+    umm_multi_info(heap, NULL, false);
     #endif
     return (size_t)ummHeapInfo.freeBlocks * UMM_BLOCKSIZE;
 }
 
 size_t umm_max_free_block_size(void) {
-    umm_info(NULL, false);
+    return umm_multi_max_free_block_size(&umm_heap_current);
+}
+
+size_t umm_multi_max_free_block_size(umm_heap *heap) {
+    umm_multi_info(heap, NULL, false);
     return ummHeapInfo.maxFreeContiguousBlocks * sizeof(umm_block);
 }
 
 int umm_usage_metric(void) {
+    return umm_multi_usage_metric(&umm_heap_current);
+}
+
+int umm_multi_usage_metric(umm_heap *heap) {
     #ifdef UMM_INLINE_METRICS
     compute_usage_metric();
     #else
-    umm_info(NULL, false);
+    umm_multi_info(heap, NULL, false);
     #endif
     DBGLOG_DEBUG("usedBlocks %i totalBlocks %i\n", ummHeapInfo.usedBlocks, ummHeapInfo.totalBlocks);
 
@@ -196,10 +214,14 @@ int umm_usage_metric(void) {
 }
 
 int umm_fragmentation_metric(void) {
+    return umm_multi_fragmentation_metric(&umm_heap_current);
+}
+
+int umm_multi_fragmentation_metric(umm_heap *heap) {
     #ifdef UMM_INLINE_METRICS
     compute_fragmentation_metric();
     #else
-    umm_info(NULL, false);
+    umm_multi_info(heap, NULL, false);
     #endif
     DBGLOG_DEBUG("freeBlocks %i freeBlocksSquared %i\n", ummHeapInfo.freeBlocks, ummHeapInfo.freeBlocksSquared);
 
@@ -207,23 +229,35 @@ int umm_fragmentation_metric(void) {
 }
 
 #ifdef UMM_INLINE_METRICS
-static void umm_fragmentation_metric_init(void) {
+static void umm_multi_fragmentation_metric_init(umm_heap *heap) {
     ummHeapInfo.freeBlocks = UMM_NUMBLOCKS - 2;
     ummHeapInfo.freeBlocksSquared = ummHeapInfo.freeBlocks * ummHeapInfo.freeBlocks;
 }
 
-static void umm_fragmentation_metric_add(uint16_t c) {
+static void umm_fragmentation_metric_init(void) {
+    umm_multi_fragmentation_metric_init(&umm_heap_current);
+}
+
+static void umm_multi_fragmentation_metric_add(umm_heap *heap, uint16_t c) {
     uint16_t blocks = (UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) - c;
     DBGLOG_DEBUG("Add block %i size %i to free metric\n", c, blocks);
     ummHeapInfo.freeBlocks += blocks;
     ummHeapInfo.freeBlocksSquared += (blocks * blocks);
 }
 
-static void umm_fragmentation_metric_remove(uint16_t c) {
+static void umm_fragmentation_metric_add(uint16_t c) {
+    umm_multi_fragmentation_metric_add(&umm_heap_current, c);
+}
+
+static void umm_multi_fragmentation_metric_remove(umm_heap *heap, uint16_t c) {
     uint16_t blocks = (UMM_NBLOCK(c) & UMM_BLOCKNO_MASK) - c;
     DBGLOG_DEBUG("Remove block %i size %i from free metric\n", c, blocks);
     ummHeapInfo.freeBlocks -= blocks;
     ummHeapInfo.freeBlocksSquared -= (blocks * blocks);
+}
+
+static void umm_fragmentation_metric_remove(uint16_t c) {
+    umm_multi_fragmentation_metric_remove(&umm_heap_current, c);
 }
 #endif // UMM_INLINE_METRICS
 
