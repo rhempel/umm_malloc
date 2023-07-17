@@ -34,6 +34,7 @@
  * R.Hempel 2020-02-01 - Macro functions are uppercased - See Issue 34
  * R.Hempel 2020-06-20 - Support alternate body size - See Issue 42
  * R.Hempel 2021-05-02 - Support explicit memory umm_init_heap() - See Issue 53
+ * K.Whitlock 2023-07-06 - Add support for multiple heaps
  * ----------------------------------------------------------------------------
  */
 
