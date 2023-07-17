@@ -44,6 +44,9 @@ GitHub users @d-a-v and @devyte provided great input on establishing
 a heap fragmentation metric which they graciously allowed to be used
 in umm_malloc.
 
+Katherine Whitlock (@stellar-aria) extended the library for usage in 
+scenarios where more than one heap or memory space is needed.
+
 ## Usage
 
 This library is designed to be included in your application as a
@@ -66,7 +69,18 @@ We can also call `umm_init_heap(void *pheap, size_t size)` where the
 heap details are passed in manually. This is useful in systems where
 you can allocate a block of memory at run time - for example in Rust.
 
-> :black_square_button: Future development may allow for multiple heaps
+### Multiple heaps
+
+For usage in a scenario that requires multiple heaps, the heap type
+`umm_heap` is exposed. All API functions (`malloc`, `free`, `realloc`, etc.) 
+have a corresponding `umm_multi_*` variant that take a pointer to this 
+type as their first parameter.
+
+Much like standard initialization, there are two methods:
+   - `umm_multi_init(umm_heap *heap)`, which initializes a given heap
+    using linker symbols
+   - `umm_multi_init_heap(umm_heap *heap, void *ptr, size_t size)`, which
+    will initialize a given heap using a known address and size.
 
 ## Automated Testing
 
@@ -128,18 +142,40 @@ making changes to the code.
 
 The following functions are available for your application:
 
-- `void *umm_malloc( size_t size );`
-- `void *umm_calloc( size_t num, size_t size );`
-- `void *umm_realloc( void *ptr, size_t size );`
-- `void  umm_free( void *ptr );`
+```c
+void *umm_malloc(size_t size)
+void *umm_calloc(size_t num, size_t size)
+void *umm_realloc(void *ptr, size_t size)
+void  umm_free(void *ptr)
+```
 
 They have exactly the same semantics as the corresponding standard library
 functions.
 
 To initialize the library there are two options:
 
-- `void *umm_malloc( size_t size );`
+```c
+void  umm_init(void)
+void  umm_init_heap(void *ptr, size_t size)
+```
 
+### Multi-Heap API
+
+For the case of multiple heaps, corresponding `umm_multi_*` functions are provided.
+
+```c
+void *umm_multi_malloc(umm_heap *heap, size_t size)
+void *umm_multi_calloc(umm_heap *heap, size_t num, size_t size)
+void *umm_multi_realloc(umm_heap *heap, void *ptr, size_t size)
+void  umm_multi_free(umm_heap *heap, void *ptr)
+```
+
+As with the standard API, there are two options for initialization:
+
+```c
+void  umm_multi_init(umm_heap *heap)
+void  umm_multi_init_heap(umm_heap *heap, void *ptr, size_t size)
+```
  
 ## Background
 
