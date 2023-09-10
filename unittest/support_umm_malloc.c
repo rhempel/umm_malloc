@@ -9,6 +9,8 @@
 
 #include "support_umm_malloc.h"
 
+#include "CppUTest/TestHarness.h"
+
 /* Start addresses and the size of the heap */
 uint32_t UMM_MALLOC_CFG_HEAP_SIZE = SUPPORT_UMM_MALLOC_HEAP_SIZE;
 
@@ -78,11 +80,11 @@ bool check_block(struct block_test_values *t) {
     strncpy(test_msg, block_test_msg, 256);
     strncat(test_msg, block_actual_msg, 256);
 
-//    TEST_ASSERT_EQUAL_MESSAGE(t->is_free,   get_block_is_free(t->block), test_msg);
-//    TEST_ASSERT_EQUAL_MESSAGE(t->next,      get_block_next(t->block), test_msg);
-//    TEST_ASSERT_EQUAL_MESSAGE(t->prev,      get_block_prev(t->block), test_msg);
-//    TEST_ASSERT_EQUAL_MESSAGE(t->next_free, get_block_next_free(t->block), test_msg);
-//    TEST_ASSERT_EQUAL_MESSAGE(t->prev_free, get_block_prev_free(t->block), test_msg);
+    CHECK_EQUAL_TEXT(t->is_free,   get_block_is_free(t->block), test_msg);
+    CHECK_EQUAL_TEXT(t->next,      get_block_next(t->block), test_msg);
+    CHECK_EQUAL_TEXT(t->prev,      get_block_prev(t->block), test_msg);
+    CHECK_EQUAL_TEXT(t->next_free, get_block_next_free(t->block), test_msg);
+    CHECK_EQUAL_TEXT(t->prev_free, get_block_prev_free(t->block), test_msg);
 
     return true;
 }
@@ -116,7 +118,7 @@ size_t normalize_allocation_size(size_t s) {
 bool check_blocks(struct block_test_values *t, size_t n) {
     int i;
     for (i = 0; i < n; ++i) {
-//        TEST_ASSERT_TRUE(check_block(&t[i]));
+        CHECK_TRUE(check_block(&t[i]));
     }
     return true;
 }

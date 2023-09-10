@@ -74,7 +74,7 @@ static bool check_poison_block(umm_block *pblock) {
         DBGLOG_ERROR("check_poison_block is called for free block 0x%08x\n", DBGLOG_32_BIT_PTR(pblock));
     } else {
         /* the block is used; let's check poison */
-        void *pc = (void *)pblock->body.data;
+        char *pc = (char *)pblock->body.data;
         void *pc_cur;
 
         pc_cur = pc + sizeof(UMM_POISONED_BLOCK_LEN_TYPE);
@@ -105,16 +105,16 @@ static void *get_poisoned(void *ptr, size_t size_w_poison) {
     if (size_w_poison != 0 && ptr != NULL) {
 
         /* Poison beginning and the end of the allocated chunk */
-        put_poison(ptr + sizeof(UMM_POISONED_BLOCK_LEN_TYPE),
+        put_poison((char *)ptr + sizeof(UMM_POISONED_BLOCK_LEN_TYPE),
             UMM_POISON_SIZE_BEFORE);
-        put_poison(ptr + size_w_poison - UMM_POISON_SIZE_AFTER,
+        put_poison((char *)ptr + size_w_poison - UMM_POISON_SIZE_AFTER,
             UMM_POISON_SIZE_AFTER);
 
         /* Put exact length of the user's chunk of memory */
         *(UMM_POISONED_BLOCK_LEN_TYPE *)ptr = (UMM_POISONED_BLOCK_LEN_TYPE)size_w_poison;
 
         /* Return pointer at the first non-poisoned byte */
-        return ptr + sizeof(UMM_POISONED_BLOCK_LEN_TYPE) + UMM_POISON_SIZE_BEFORE;
+        return (char *)ptr + sizeof(UMM_POISONED_BLOCK_LEN_TYPE) + UMM_POISON_SIZE_BEFORE;
     } else {
         return ptr;
     }
@@ -130,10 +130,10 @@ static void *get_unpoisoned(umm_heap *heap, void *ptr) {
     if (ptr != NULL) {
         uint16_t c;
 
-        ptr -= (sizeof(UMM_POISONED_BLOCK_LEN_TYPE) + UMM_POISON_SIZE_BEFORE);
+        ptr = (char *)ptr - (sizeof(UMM_POISONED_BLOCK_LEN_TYPE) + UMM_POISON_SIZE_BEFORE);
 
         /* Figure out which block we're in. Note the use of truncated division... */
-        c = (((void *)ptr) - (void *)(&(UMM_HEAP[0]))) / UMM_BLOCKSIZE;
+        c = (((char *)ptr) - (char *)(&(UMM_HEAP[0]))) / UMM_BLOCKSIZE;
 
         check_poison_block(&UMM_BLOCK(c));
     }

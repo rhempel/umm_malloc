@@ -31,8 +31,15 @@ SRC_TEST :=
 
 SRC_C += src/umm_malloc.c
 
+SRC_TEST += unittest/test_FirstMalloc.c
+SRC_TEST += unittest/test_TooBigMalloc.c
+SRC_TEST += unittest/test_Free.c
+SRC_TEST += unittest/test_Realloc.c
+SRC_TEST += unittest/test_MultiMalloc.c
+SRC_TEST += unittest/test_Metrics.c
+SRC_TEST += unittest/test_Poison.c
+SRC_TEST += unittest/test_Stress.c
 SRC_TEST += unittest/support_umm_malloc.c
-SRC_TEST += unittest/test.c
 SRC_TEST += unittest/main.c
 
 # ----------------------------------------------------------------------------
@@ -41,11 +48,12 @@ SRC_TEST += unittest/main.c
 $(MODULE)_SRCPATH :=
 $(MODULE)_SRCPATH += $(SRC_PATH)/$(MODULE_PATH)/src
 
+$(MODULE)_INCPATH := $(SRC_PATH)/$(MODULE_PATH)/src
+
 ifeq (unittest,$(MAKECMDGOALS))
   $(MODULE)_SRCPATH += $(SRC_PATH)/$(MODULE_PATH)/unittest
+  $(MODULE)_INCPATH += $(SRC_PATH)/$(MODULE_PATH)/unittest
 endif
-
-$(MODULE)_INCPATH := $(SRC_PATH)/$(MODULE_PATH)/src
 
 $(MODULE)_TEST_SRCPATH := $(SRC_PATH)/$(MODULE_PATH)/unittest
 $(MODULE)_TEST_BUILDPATH := $(OBJ_PATH)/$(MODULE_PATH)/unittest

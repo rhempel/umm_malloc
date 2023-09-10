@@ -402,6 +402,15 @@ void umm_multi_free(umm_heap *heap, void *ptr) {
         return;
     }
 
+    /* If we're being asked to free an out of range pointer - do nothing */
+    /* TODO: remove the check for NULL pointer later */
+
+    if ((ptr < heap->pheap) || ((size_t)ptr >= (size_t)heap->pheap + heap->heap_size)) {
+        DBGLOG_DEBUG("free an out of range pointer -> do nothing\n");
+
+        return;
+    }
+
     /* Free the memory withing a protected critical section */
 
     UMM_CRITICAL_ENTRY(id_free);
