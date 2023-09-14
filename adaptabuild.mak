@@ -56,7 +56,7 @@ ifeq (unittest,$(MAKECMDGOALS))
 endif
 
 $(MODULE)_TEST_SRCPATH := $(SRC_PATH)/$(MODULE_PATH)/unittest
-$(MODULE)_TEST_BUILDPATH := $(OBJ_PATH)/$(MODULE_PATH)/unittest
+$(MODULE)_TEST_BUILDPATH := $(BUILD_PATH)/$(MODULE_PATH)/unittest
 
 # ----------------------------------------------------------------------------
 # NOTE: The default config file must be created somehow - it is normally
