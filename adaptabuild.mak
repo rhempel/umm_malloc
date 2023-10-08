@@ -9,8 +9,10 @@
 # Managing Projects with GNU Make - Robert Mecklenburg - ISBN 0-596-00610-1
 # ----------------------------------------------------------------------------
 
-MODULE_PATH := umm_malloc
-MODULE      := umm_malloc
+MODULE := umm_malloc
+$(info MODULE is $(MODULE))
+MODULE_PATH := $(call make_current_module_path)
+$(info MODULE_PATH is $(MODULE_PATH))
 
 # ----------------------------------------------------------------------------
 # Source file lists go here, C dependencies are automatically generated
@@ -46,17 +48,19 @@ SRC_TEST += unittest/main.c
 # Set up the module level specifics for the source, include, and object paths
 
 $(MODULE)_SRCPATH :=
-$(MODULE)_SRCPATH += $(SRC_PATH)/$(MODULE_PATH)/src
+$(MODULE)_SRCPATH += src
 
-$(MODULE)_INCPATH := $(SRC_PATH)/$(MODULE_PATH)/src
+$(MODULE)_INCPATH := src
+
+$(MODULE)_ROOT_INCPATH :=
 
 ifeq (unittest,$(MAKECMDGOALS))
-  $(MODULE)_SRCPATH += $(SRC_PATH)/$(MODULE_PATH)/unittest
-  $(MODULE)_INCPATH += $(SRC_PATH)/$(MODULE_PATH)/unittest
+  $(MODULE)_SRCPATH += unittest
+  $(MODULE)_INCPATH += unittest
 endif
 
-$(MODULE)_TEST_SRCPATH := $(SRC_PATH)/$(MODULE_PATH)/unittest
-$(MODULE)_TEST_BUILDPATH := $(BUILD_PATH)/$(MODULE_PATH)/unittest
+$(MODULE)_TEST_SRCPATH := unittest
+$(MODULE)_TEST_BUILDPATH := unittest
 
 # ----------------------------------------------------------------------------
 # NOTE: The default config file must be created somehow - it is normally
@@ -66,7 +70,7 @@ $(MODULE)_TEST_BUILDPATH := $(BUILD_PATH)/$(MODULE_PATH)/unittest
 # By convention we place config files in product/$(PRODUCT)/$(MCU) because
 # that's an easy pace to leave things like HAL config, linker scripts etc
 
-$(MODULE)_INCPATH += product/$(PRODUCT)/config/$(MCU)
+$(MODULE)_ROOT_INCPATH += product/$(PRODUCT)/config/$(MCU)
 
 # ----------------------------------------------------------------------------
 # Set any module level compile time defaults here
