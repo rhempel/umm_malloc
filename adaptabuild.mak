@@ -10,9 +10,13 @@
 # ----------------------------------------------------------------------------
 
 MODULE := umm_malloc
+
 $(info MODULE is $(MODULE))
 MODULE_PATH := $(call make_current_module_path)
 $(info MODULE_PATH is $(MODULE_PATH))
+
+$(MODULE)_PATH := $(MODULE_PATH)
+$(info $(MODULE)_PATH is $($(MODULE)_PATH))
 
 # ----------------------------------------------------------------------------
 # Source file lists go here, C dependencies are automatically generated
@@ -76,8 +80,10 @@ $(MODULE)_ROOT_INCPATH += product/$(PRODUCT)/config/$(MCU)
 # Set any module level compile time defaults here
 
 $(MODULE)_CDEFS :=
+$(MODULE)_CDEFS +=
 
-$(MODULE)_CFLAGS := -I $(CPPUTEST_HOME)
+$(MODULE)_CFLAGS :=
+$(MODULE)_CFLAGS += -I $(CPPUTEST_HOME)
 
 # ----------------------------------------------------------------------------
 # Include the adaptabuild library makefile - must be done for each module!
