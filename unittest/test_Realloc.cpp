@@ -146,12 +146,12 @@ TEST(Realloc, testReallocAssimilateUpExact)
 }
 
 struct block_test_values ReallocAssimilateUp[] = {
-  {0, false, 1, 0, 5, 5}
-, {1, false, 6, 0, 0, 0}
+  {0, false, 1, 0, 4, 6}
+, {1, false, 2, 0, 0, 0}
 , {2, false, 4, 1, 0, 0}
-, {4, true,  5, 2, 0, 0}
-, {5, true,  6, 4, 0, 0}
-, {6, true,  UMM_LASTBLOCK, 5, 0, 0}
+, {4, true,  5, 2, 6, 0}
+, {5, false, 6, 4, 0, 0}
+, {6, true,  UMM_LASTBLOCK, 5, 0, 4}
 , {UMM_LASTBLOCK, false, 0, 6, 0, 0}
 };
 

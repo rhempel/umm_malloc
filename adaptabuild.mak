@@ -57,17 +57,14 @@ $(MODULE)_INCPATH :=
 $(MODULE)_INCPATH += $(MODULE_PATH)/src
 
 ifeq (unittest,$(MAKECMDGOALS))
-  $(MODULE)_SRCPATH += unittest
-  $(MODULE)_INCPATH += unittest
+  $(MODULE)_SRCPATH += $(MODULE_PATH)/unittest
+  $(MODULE)_INCPATH += $(MODULE_PATH)/unittest
 endif
-
-$(MODULE)_TEST_SRCPATH := unittest
-$(MODULE)_TEST_BUILDPATH := unittest
 
 # ----------------------------------------------------------------------------
 # NOTE: The default config file must be created somehow - it is normally
-#       up to the developer to specify which umm_malloc defines are needed
-#       and how they are to be configured.
+#       up to the developer to specify which defines are needed and how they
+#       are to be configured.
 #
 # By convention we place config files in product/$(PRODUCT)/config/$(MCU) because
 # that's an easy pace to leave things like HAL config, linker scripts etc
@@ -81,18 +78,25 @@ $(MODULE)_CDEFS :=
 $(MODULE)_CDEFS +=
 
 $(MODULE)_CFLAGS :=
+$(MODULE)_CFLAGS += -Wno-builtin-declaration-mismatch
 
 ifeq (unittest,$(MAKECMDGOALS))
-  $(MODULE)_INCPATH += $(CPPUTEST_HOME)
-else
-  $(MODULE)_CFLAGS += -nostdinc
-  $(MODULE)_INCPATH += $(umm_libc_PATH)/include
+  $(MODULE)_CDEFS +=
 endif
 
 # ----------------------------------------------------------------------------
 # Include the adaptabuild library makefile - must be done for each module!
 
 include $(ADAPTABUILD_PATH)/make/library.mak
-# include $(ADAPTABUILD_PATH)/make/unittest.mak
+
+# ----------------------------------------------------------------------------
+# Include the unit test framework makefile that works for this module
+# if the target is unittest
+
+ifeq (unittest,$(MAKECMDGOALS))
+  TESTABLE_MODULES += $(MODULE)
+  $(MODULE)_test_main = $(MODULE)/unittest/main.o
+  include $(ADAPTABUILD_PATH)/make/test/cpputest.mak
+endif
 
 # ----------------------------------------------------------------------------

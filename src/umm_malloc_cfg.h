@@ -134,6 +134,10 @@
 #include <umm_malloc_cfgport.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Forward declaration of umm_heap_config */
 struct umm_heap_config;
 
@@ -390,5 +394,9 @@ extern bool  umm_poison_check(void);
 #define DBGLOG_WARNING(format, ...)
 #define DBGLOG_INFO(format, ...)
 #define DBGLOG_FORCE(format, ...)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _UMM_MALLOC_CFG_H */

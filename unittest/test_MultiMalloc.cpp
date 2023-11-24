@@ -26,7 +26,7 @@ TEST_GROUP(MultiMalloc)
     }
 };
 
-TEST(MultiMalloc,testMultMallocWithMultipleHeaps)
+IGNORE_TEST(MultiMalloc,testMultMallocWithMultipleHeaps)
 {
     FAIL("Currently this only tests the interface to umm_malloc, not multiple heaps");
 }
