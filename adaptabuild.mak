@@ -54,10 +54,12 @@ $(MODULE)_SRCPATH :=
 $(MODULE)_SRCPATH += $(MODULE_PATH)/src
 
 $(MODULE)_INCPATH :=
-$(MODULE)_INCPATH += $(MODULE_PATH)/src
+$(MODULE)_INCPATH += $(umm_libc_PATH)/include
 
 ifeq (unittest,$(MAKECMDGOALS))
   $(MODULE)_SRCPATH += $(MODULE_PATH)/unittest
+
+  $(MODULE)_INCPATH += $(MODULE_PATH)/src
   $(MODULE)_INCPATH += $(MODULE_PATH)/unittest
 endif
 
