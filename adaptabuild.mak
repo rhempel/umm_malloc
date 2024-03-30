@@ -54,7 +54,10 @@ $(MODULE)_SRCPATH :=
 $(MODULE)_SRCPATH += $(MODULE_PATH)/src
 
 $(MODULE)_INCPATH :=
-$(MODULE)_INCPATH += $(umm_libc_PATH)/include
+
+ifneq (host,$(MCU))
+  $(MODULE)_INCPATH += $(umm_libc_PATH)/include
+endif
 
 ifeq (unittest,$(MAKECMDGOALS))
   $(MODULE)_SRCPATH += $(MODULE_PATH)/unittest
