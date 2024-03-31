@@ -12,10 +12,10 @@
 MODULE := umm_malloc
 
 MODULE_PATH := $(call make_current_module_path)
-$(info MODULE_PATH is $(MODULE_PATH))
+$(call log_debug,MODULE_PATH is $(MODULE_PATH))
 
 $(MODULE)_PATH := $(MODULE_PATH)
-$(info $(MODULE)_PATH is $($(MODULE)_PATH))
+$(call log_debug,$(MODULE)_PATH is $($(MODULE)_PATH))
 
 # ----------------------------------------------------------------------------
 # Source file lists go here, C dependencies are automatically generated
