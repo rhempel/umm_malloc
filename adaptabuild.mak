@@ -89,6 +89,12 @@ ifeq (unittest,$(MAKECMDGOALS))
   $(MODULE)_CDEFS +=
 endif
 
+ifeq (host,$(MCU))
+    # Do nothing - we want the standard library for host builds
+else
+    $(MODULE)_CFLAGS += -nostdinc
+endif
+
 # ----------------------------------------------------------------------------
 # Include the adaptabuild library makefile - must be done for each module!
 
@@ -99,8 +105,8 @@ include $(ADAPTABUILD_PATH)/make/library.mak
 # if the target is unittest
 
 ifeq (unittest,$(MAKECMDGOALS))
-  TESTABLE_MODULES += $(MODULE)
-  $(MODULE)_test_main = $(MODULE)/unittest/main.o
+  TESTABLE_MODULES += $(MODULE)_UNITTEST
+  $(MODULE)_test_main := unittest/main.o
   include $(ADAPTABUILD_PATH)/make/test/cpputest.mak
 endif
 
