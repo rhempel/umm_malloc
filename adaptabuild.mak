@@ -71,10 +71,10 @@ endif
 #       up to the developer to specify which defines are needed and how they
 #       are to be configured.
 #
-# By convention we place config files in product/$(PRODUCT)/config/$(MCU) because
+# By convention we place config files in $(PRODUCT)/config/$(MCU) because
 # that's an easy pace to leave things like HAL config, linker scripts etc
 
-$(MODULE)_INCPATH += product/$(PRODUCT)/config/$(MCU)
+$(MODULE)_INCPATH += $(PRODUCT)/config/$(MCU)
 
 # ----------------------------------------------------------------------------
 # Set any module level compile time defaults here
