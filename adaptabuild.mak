@@ -1,7 +1,5 @@
 # ----------------------------------------------------------------------------
-# umm_malloc makefile
-# (c)2006-2023 by Ralph Hempel, Owen Sound, Canada
-# rhempel@hempeldesigngroup.com
+# umm_malloc makefile for adaptabuild
 #
 # This is designed to be included as part of a make system designed
 # to be expandable and maintainable using techniques found in:
@@ -36,34 +34,25 @@ SRC_TEST :=
 
 SRC_C += src/umm_malloc.c
 
-SRC_TEST += unittest/test_FirstMalloc.c
-SRC_TEST += unittest/test_TooBigMalloc.c
-SRC_TEST += unittest/test_Free.c
-SRC_TEST += unittest/test_Realloc.c
-SRC_TEST += unittest/test_MultiMalloc.c
-SRC_TEST += unittest/test_Metrics.c
-SRC_TEST += unittest/test_Poison.c
-SRC_TEST += unittest/test_Stress.c
-SRC_TEST += unittest/support_umm_malloc.c
-SRC_TEST += unittest/main.c
+SRC_TEST += cpputest/test_FirstMalloc.c
+SRC_TEST += cpputest/test_TooBigMalloc.c
+SRC_TEST += cpputest/test_Free.c
+SRC_TEST += cpputest/test_Realloc.c
+SRC_TEST += cpputest/test_MultiMalloc.c
+SRC_TEST += cpputest/test_Metrics.c
+SRC_TEST += cpputest/test_Poison.c
+SRC_TEST += cpputest/test_Stress.c
+SRC_TEST += cpputest/support_umm_malloc.c
+SRC_TEST += cpputest/main.c
 
 # ----------------------------------------------------------------------------
-# Set up the module level specifics for the source, include, and object paths
-
-$(MODULE)_SRCPATH :=
-$(MODULE)_SRCPATH += $(MODULE_PATH)/src
+# Set up the module level include path
 
 $(MODULE)_INCPATH :=
 
-ifneq (host,$(MCU))
-  $(MODULE)_INCPATH += $(umm_libc_PATH)/include
-endif
-
 ifeq (unittest,$(MAKECMDGOALS))
-  $(MODULE)_SRCPATH += $(MODULE_PATH)/unittest
-
   $(MODULE)_INCPATH += $(MODULE_PATH)/src
-  $(MODULE)_INCPATH += $(MODULE_PATH)/unittest
+  $(MODULE)_INCPATH += $(MODULE_PATH)/cpputest
 endif
 
 # ----------------------------------------------------------------------------
@@ -83,16 +72,10 @@ $(MODULE)_CDEFS :=
 $(MODULE)_CDEFS +=
 
 $(MODULE)_CFLAGS :=
-$(MODULE)_CFLAGS += -Wno-builtin-declaration-mismatch
+$(MODULE)_CFLAGS +=
 
 ifeq (unittest,$(MAKECMDGOALS))
   $(MODULE)_CDEFS +=
-endif
-
-ifeq (host,$(MCU))
-    # Do nothing - we want the standard library for host builds
-else
-    $(MODULE)_CFLAGS += -nostdinc
 endif
 
 # ----------------------------------------------------------------------------
@@ -102,11 +85,11 @@ include $(ADAPTABUILD_PATH)/make/library.mak
 
 # ----------------------------------------------------------------------------
 # Include the unit test framework makefile that works for this module
-# if the target is unittest
+# if the target is cpputest
 
 ifeq (unittest,$(MAKECMDGOALS))
   TESTABLE_MODULES += $(MODULE)_UNITTEST
-  $(MODULE)_test_main := unittest/main.o
+  $(MODULE)_test_main := cpputest/main.o
   include $(ADAPTABUILD_PATH)/make/test/cpputest.mak
 endif
 

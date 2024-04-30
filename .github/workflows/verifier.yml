@@ -1,16 +1,76 @@
-name: verifier
+name: verifyer
 on: [pull_request, workflow_dispatch]
 jobs:
   multi_test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: ruby/setup-ruby@v1
+      - uses: actions/checkout@main
+
+      - name: Install cpputest and lcov ...
+        run: |
+          sudo apt install --no-install-recommends -y cpputest lcov
+          sudo pip install junit2html
+
+      - name: Directory test
+        run: |
+          echo ${HOME}
+          echo ${PWD}
+          mkdir -p ${HOME}/work/umm_malloc/src
+          find ${HOME}/work/umm_malloc -type d
+
+      - name: Link umm_malloc to src
+        run: |
+          ln -s  ${HOME}/work/umm_malloc/umm_malloc ${HOME}/work/umm_malloc/src/umm_malloc         
+          ls -al ${HOME}/work/umm_malloc/src/umm_malloc
+          
+      - name: Link unittest to src
+        run: |
+          ln -s  ${HOME}/work/umm_malloc/umm_malloc/unittest ${HOME}/work/umm_malloc/src/unittest
+          ls -al ${HOME}/work/umm_malloc/src/unittest
+
+      - name: Copy adaptabuild config files
+        run: |
+          cp ${HOME}/work/umm_malloc/umm_malloc/adaptabuild/* ${HOME}/work/umm_malloc
+          ls -al ${HOME}/work/umm_malloc
+
+      - name: Clone adaptabuild
+        run: |
+          git clone https://github.com/rhempel/adaptabuild.git ${HOME}/work/umm_malloc/adaptabuild
+          ls -al ${HOME}/work/umm_malloc
+
+      - name: Run the unit tests
+        run: |
+          make -f ${HOME}/work/umm_malloc/adaptabuild.mak MCU=host PRODUCT=unittest unittest
+          ls -al ${HOME}/work/umm_malloc/artifacts
+          find ${HOME}/work/umm_malloc/artifacts
+
+      - name: Archive test and coverage results
+        uses: actions/upload-artifact@main
         with:
-          ruby-version: 3.0.2
+          name: Test and Coverage Results
+          path: ~/work/umm_malloc/artifacts/unittest/host/umm_malloc
 
-      - name: Install ceedling
-        run: gem install ceedling
 
-      - name: Run multi-configuration tests
-        run: ./multitest.sh
+#          ls -al unittest
+#          ls -al unittest/artifacts/unittest/host/umm_malloc/
+#          ls -al ~
+#          ls -al ${PWD}/unittest/artifacts/unittest/host/umm_malloc
+#          echo ${PWD}
+#          echo ${HOME}
+#          find ${HOME} -type d
+
+#      - name: Archive test and coverage results
+#        uses: actions/upload-artifact@main
+#        with:
+#          name: Test and Coverage Results
+#          path: ${HOME}/work/unittest/artifacts/unittest/host/umm_malloc
+
+#          cd unittest     && cp src/umm_malloc/adaptabuild/* .
+#          cd unittest     && make -f adaptabuild.mak MCU=host PRODUCT=unittest unittest
+#          ls -al unittest
+
+#      - name: Link unittest source up one level
+#        run: sudo apt install --no-install-recommends -y cpputest
+
+#      - name: Run multi-configuration tests
+#        run: ./multitest.sh
