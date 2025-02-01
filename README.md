@@ -1,4 +1,4 @@
-[![verifier](https://github.com/rhempel/umm_malloc/actions/workflows/verifier.yml/badge.svg?branch=master&event=workflow_dispatch)](https://github.com/rhempel/umm_malloc/actions/workflows/verifier.yml)
+[![verifyer](https://github.com/rhempel/umm_malloc/actions/workflows/verifier.yml/badge.svg?branch=master)](https://github.com/rhempel/umm_malloc/actions/workflows/verifier.yml)
 
 # umm_malloc - Memory Manager For Small(ish) Microprocessors
 
