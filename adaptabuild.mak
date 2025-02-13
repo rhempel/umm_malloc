@@ -7,6 +7,8 @@
 # Managing Projects with GNU Make - Robert Mecklenburg - ISBN 0-596-00610-1
 # ----------------------------------------------------------------------------
 
+$(call log_debug,MODULE_DIR = $(dir $(lastword $(MAKEFILE_LIST))))
+
 MODULE := umm_malloc
 
 MODULE_PATH := $(call make_current_module_path)
@@ -76,6 +78,7 @@ $(MODULE)_CFLAGS +=
 
 ifeq (unittest,$(MAKECMDGOALS))
   $(MODULE)_CDEFS +=
+  $(MODULE)_test_main := cpputest/main.o
 endif
 
 # ----------------------------------------------------------------------------
@@ -83,14 +86,14 @@ endif
 
 include $(ADAPTABUILD_PATH)/make/library.mak
 
-# ----------------------------------------------------------------------------
-# Include the unit test framework makefile that works for this module
-# if the target is cpputest
-
-ifeq (unittest,$(MAKECMDGOALS))
-  TESTABLE_MODULES += $(MODULE)_UNITTEST
-  $(MODULE)_test_main := cpputest/main.o
-  include $(ADAPTABUILD_PATH)/make/test/cpputest.mak
-endif
+# # ----------------------------------------------------------------------------
+# # Include the unit test framework makefile that works for this module
+# # if the target is cpputest
+# 
+# ifeq (unittest,$(MAKECMDGOALS))
+#   TESTABLE_MODULES += $(MODULE)_UNITTEST
+#   $(MODULE)_test_main := cpputest/main.o
+#   include $(ADAPTABUILD_PATH)/make/test/cpputest.mak
+# endif
 
 # ----------------------------------------------------------------------------
