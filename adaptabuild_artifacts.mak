@@ -11,4 +11,4 @@ else
     # Do nothing
 endif
 
-include $(SRC_PATH)/umm_malloc/adaptabuild.mak
+include $(SRC_PATH)/adaptabuild.mak

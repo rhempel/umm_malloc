@@ -10,10 +10,10 @@
 MODULE := umm_malloc
 
 MODULE_PATH := $(call make_current_module_path)
-$(call log_debug,MODULE_PATH is $(MODULE_PATH))
+# $(call log_debug,MODULE_PATH is $(MODULE_PATH))
 
 $(MODULE)_PATH := $(MODULE_PATH)
-$(call log_debug,$(MODULE)_PATH is $($(MODULE)_PATH))
+# $(call log_debug,$(MODULE)_PATH is $($(MODULE)_PATH))
 
 # ----------------------------------------------------------------------------
 # Source file lists go here, C dependencies are automatically generated
@@ -76,6 +76,7 @@ $(MODULE)_CFLAGS +=
 
 ifeq (unittest,$(MAKECMDGOALS))
   $(MODULE)_CDEFS +=
+  $(MODULE)_test_main := cpputest/main.o
 endif
 
 # ----------------------------------------------------------------------------
@@ -83,14 +84,14 @@ endif
 
 include $(ADAPTABUILD_PATH)/make/library.mak
 
-# ----------------------------------------------------------------------------
-# Include the unit test framework makefile that works for this module
-# if the target is cpputest
-
-ifeq (unittest,$(MAKECMDGOALS))
-  TESTABLE_MODULES += $(MODULE)_UNITTEST
-  $(MODULE)_test_main := cpputest/main.o
-  include $(ADAPTABUILD_PATH)/make/test/cpputest.mak
-endif
+# # ----------------------------------------------------------------------------
+# # Include the unit test framework makefile that works for this module
+# # if the target is cpputest
+# 
+# ifeq (unittest,$(MAKECMDGOALS))
+#   TESTABLE_MODULES += $(MODULE)_UNITTEST
+#   $(MODULE)_test_main := cpputest/main.o
+#   include $(ADAPTABUILD_PATH)/make/test/cpputest.mak
+# endif
 
 # ----------------------------------------------------------------------------

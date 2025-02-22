@@ -1,0 +1,3 @@
+[submodule "adaptabuild"]
+	path = adaptabuild
+	url = https://github.com/rhempel/adaptabuild.git
