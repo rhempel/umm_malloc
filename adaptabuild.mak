@@ -10,10 +10,10 @@
 MODULE := umm_malloc
 
 MODULE_PATH := $(call make_current_module_path)
-# $(call log_debug,MODULE_PATH is $(MODULE_PATH))
+$(call log_debug,MODULE_PATH is $(MODULE_PATH))
 
 $(MODULE)_PATH := $(MODULE_PATH)
-# $(call log_debug,$(MODULE)_PATH is $($(MODULE)_PATH))
+$(call log_debug,$(MODULE)_PATH is $($(MODULE)_PATH))
 
 # ----------------------------------------------------------------------------
 # Source file lists go here, C dependencies are automatically generated
@@ -70,6 +70,12 @@ $(MODULE)_INCPATH += $(PRODUCT)/config/$(MCU)
 
 $(MODULE)_CDEFS :=
 $(MODULE)_CDEFS +=
+
+$(call log_notice,UMM_CONFIG is $(UMM_CFGFILE))
+
+ifneq  (,$(UMM_CFGFILE))
+    $(MODULE)_CDEFS += UMM_CFGFILE=\"$(UMM_CFGFILE).h\"
+endif
 
 $(MODULE)_CFLAGS :=
 $(MODULE)_CFLAGS +=

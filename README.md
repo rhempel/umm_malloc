@@ -103,7 +103,7 @@ works. The priority for configuration overrides is as follows:
 
 1. Command line defines using `-D UMM_xxx`
 2. A custom config filename using `-D UMM_CFGFILE="<filename.cfg>"`
-3. The default config filename `umm_malloc_cfgport.h`
+3. The default config filename `path/to/config/umm_malloc_cfgport.h`
 4. The default configuration in `src/umm_malloc_cfg.h`
 
 

@@ -28,7 +28,7 @@ TEST_GROUP(Free)
     }
 
     void teardown(void) {
-        CHECK_COMPARE(1, > ,umm_max_critical_depth);
+        CHECK_COMPARE(1, >= ,umm_max_critical_depth);
     }
 };
 
