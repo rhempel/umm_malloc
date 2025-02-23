@@ -11,4 +11,4 @@ else
     # Do nothing
 endif
 
-include $(SRC_PATH)/adaptabuild.mak
+include $(SRC_PATH)/adaptabuild_module.mak
