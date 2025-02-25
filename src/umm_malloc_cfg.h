@@ -24,7 +24,7 @@
  * of priority
  *
  * 1. Pass in the override values on the command line using -D UMM_xxx
- * 2. Pass in the filename holding override values using -D UMM_CFGFILE
+ * 2. Pass in the filename holding override values using -D UMM_MALLOC_CFGFILE
  * 3. Set up defaults in a file called umm_malloc_cfgport.h
  *
  * NOTE WELL: For the command line -D options to take highest priority, your
@@ -128,8 +128,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifdef UMM_CFGFILE
-#include UMM_CFGFILE
+#ifdef UMM_MALLOC_CFGFILE
+#include UMM_MALLOC_CFGFILE
 #else
 #include <umm_malloc_cfgport.h>
 #endif

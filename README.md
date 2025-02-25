@@ -102,7 +102,7 @@ The reason for this is the way the configuration override heirarchy
 works. The priority for configuration overrides is as follows:
 
 1. Command line defines using `-D UMM_xxx`
-2. A custom config filename using `-D UMM_CFGFILE="<filename.cfg>"`
+2. A custom config filename using `-D UMM_MALLOC_CFGFILE="<filename.cfg>"`
 3. The default config filename `path/to/config/umm_malloc_cfgport.h`
 4. The default configuration in `src/umm_malloc_cfg.h`
 

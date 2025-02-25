@@ -71,10 +71,10 @@ $(MODULE)_INCPATH += $(PRODUCT)/config/$(MCU)
 $(MODULE)_CDEFS :=
 $(MODULE)_CDEFS +=
 
-$(call log_notice,UMM_CONFIG is $(UMM_CFGFILE))
+$(call log_notice,UMM_MALLOC_CFGFILE is $(UMM_MALLOC_CFGFILE))
 
-ifneq  (,$(UMM_CFGFILE))
-    $(MODULE)_CDEFS += UMM_CFGFILE=\"$(UMM_CFGFILE).h\"
+ifneq  (,$(UMM_MALLOC_CFGFILE))
+    $(MODULE)_CDEFS += UMM_MALLOC_CFGFILE=$(UMM_MALLOC_CFGFILE)
 endif
 
 $(MODULE)_CFLAGS :=

@@ -1,0 +1,1 @@
+#define UMM_INLINE_METRICS
