@@ -278,6 +278,21 @@ static uint16_t umm_assimilate_down(umm_heap *heap, uint16_t c, uint16_t freemas
 /* ------------------------------------------------------------------------- */
 
 void umm_multi_init_heap(umm_heap *heap, void *ptr, size_t size) {
+    /* Guard against too many blocks for 15-bit indices */
+    if ((size / UMM_BLOCKSIZE) > UMM_BLOCKNO_MASK)
+    {
+        /* Try increasing UMM_BLOCKSIZE if this hits */
+        DBGLOG_CRITICAL("Heap too large: %u blocks (max %u)\n",
+            (unsigned) UMM_NUMBLOCKS, (unsigned) UMM_BLOCKNO_MASK);
+
+        /* Mark this heap as unusable */
+        heap->pheap = NULL;
+        UMM_HEAPSIZE = 0;
+        UMM_NUMBLOCKS = 0;
+
+        return;
+    }
+
     /* init heap pointer and size, and memset it to 0 */
     heap->pheap = ptr;
     UMM_HEAPSIZE = size;
