@@ -11,41 +11,25 @@ jobs:
           sudo apt install --no-install-recommends -y cpputest lcov
           sudo pip install junit2html
 
-      - name: Directory test
-        run: |
-          echo ${HOME}
-          echo ${PWD}
-          mkdir -p ${HOME}/work/umm_malloc/src
-          find ${HOME}/work/umm_malloc -type d
-
-      - name: Link umm_malloc to src
-        run: |
-          ln -s  ${HOME}/work/umm_malloc/umm_malloc ${HOME}/work/umm_malloc/src/umm_malloc         
-          ls -al ${HOME}/work/umm_malloc/src/umm_malloc
-          
-      - name: Link unittest to src
-        run: |
-          ln -s  ${HOME}/work/umm_malloc/umm_malloc/unittest ${HOME}/work/umm_malloc/src/unittest
-          ls -al ${HOME}/work/umm_malloc/src/unittest
-
-      - name: Copy adaptabuild config files
-        run: |
-          cp ${HOME}/work/umm_malloc/umm_malloc/adaptabuild/* ${HOME}/work/umm_malloc
-          ls -al ${HOME}/work/umm_malloc
-
       - name: Clone adaptabuild
         run: |
-          git clone https://github.com/rhempel/adaptabuild.git ${HOME}/work/umm_malloc/adaptabuild
-          ls -al ${HOME}/work/umm_malloc
+          echo PWD is $PWD
+          git submodule update --init
+#          git clone https://github.com/rhempel/adaptabuild.git ${HOME}/work/umm_malloc/umm_malloc/adaptabuild
 
       - name: Run the unit tests
         run: |
-          make -f ${HOME}/work/umm_malloc/adaptabuild_config.mak MCU=host PRODUCT=default unittest
-          ls -al ${HOME}/work/umm_malloc/artifacts
-          find ${HOME}/work/umm_malloc/artifacts
+          make -f ${HOME}/work/umm_malloc/umm_malloc/adaptabuild_config.mak MCU=host PRODUCT=default unittest
+          make -f ${HOME}/work/umm_malloc/umm_malloc/adaptabuild_config.mak MCU=host PRODUCT=enable_info unittest
+          make -f ${HOME}/work/umm_malloc/umm_malloc/adaptabuild_config.mak MCU=host PRODUCT=enable_critical_depth_check unittest
+          make -f ${HOME}/work/umm_malloc/umm_malloc/adaptabuild_config.mak MCU=host PRODUCT=enable_inline_metrics unittest
+          make -f ${HOME}/work/umm_malloc/umm_malloc/adaptabuild_config.mak MCU=host PRODUCT=enable_integrity_check unittest
+          make -f ${HOME}/work/umm_malloc/umm_malloc/adaptabuild_config.mak MCU=host PRODUCT=enable_poison_check unittest
+          make -f ${HOME}/work/umm_malloc/umm_malloc/adaptabuild_config.mak MCU=host PRODUCT=enable_first_fit unittest
+          make -f ${HOME}/work/umm_malloc/umm_malloc/adaptabuild_config.mak MCU=host PRODUCT=default unittest
 
       - name: Archive test and coverage results
         uses: actions/upload-artifact@main
         with:
           name: Test and Coverage Results
-          path: ~/work/umm_malloc/artifacts/default/host/umm_malloc
+          path: ~/work/umm_malloc/umm_malloc/artifacts

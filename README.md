@@ -86,13 +86,10 @@ Much like standard initialization, there are two methods:
 
 `umm_malloc` is designed to be testable in standalone mode using `CppUTest`.
 
-To run the test suite, 
-mode using `ceedling`. To run the test suite, just make sure you have
-`ceedling` installed and then run:
+To run the test suite with the default configuration:
 
 ```
-ceedling clean
-ceedling test:all
+make -f adaptabuild_config.mak PRODUCT=default MCU=host unittest
 ```
 
 ## Configuration
@@ -184,11 +181,10 @@ void  umm_multi_init_heap(umm_heap *heap, void *ptr, size_t size)
 The memory manager assumes the following things:
 
 1. The standard POSIX compliant malloc/calloc/realloc/free semantics are used
-1. All memory used by the manager is allocated at link time, it is aligned
+1. Any memory used by `umm_malloc` is either allocated at link time or is
+managed by the application. The memory block for any heap is aligned
 on a 32 bit boundary, it is contiguous, and its extent (start and end
-address) is filled in by the linker.
-1. All memory used by the manager is initialized to 0 as part of the
-runtime startup routine. No other initialization is required.
+address) is known.
 
 The fastest linked list implementations use doubly linked lists so that
 its possible to insert and delete blocks in constant time. This memory
@@ -241,12 +237,12 @@ c  |* n |  p | nf | pf |
 
 Where:
 
-- c  is the index of this block
-- *  is the indicator for a free block
-- n  is the index of the next block in the heap
-- p  is the index of the previous block in the heap
-- nf is the index of the next block in the free list
-- pf is the index of the previous block in the free list
+- `c`  is the index of this block
+- `*`  is the indicator for a free block
+- `n`  is the index of the next block in the heap
+- `p`  is the index of the previous block in the heap
+- `nf` is the index of the next block in the free list
+- `pf` is the index of the previous block in the free list
 
 The fact that we have forward and backward links in the block descriptors
 means that malloc() and free() operations can be very fast. It's easy
@@ -255,7 +251,7 @@ of the free item and leave the rest on the free list without traversing
 the list from front to back first.
 
 The entire block of memory used by the heap is assumed to be initialized
-to 0. The very first block in the heap is special - it't the head of the
+to 0. The very first block in the heap is special - it's the head of the
 free block list. It is never assimilated with a free block (more on this
 later).
 
@@ -405,38 +401,36 @@ prev free list index values in the pf and nf blocks.
 
 ### Operation of malloc when we have found a block that will fit the current request of b units with some left over
 
-We'll allocate the new block at the END of the current free block so we
-don't have to change ANY free list pointers.
+We'll allocate the new block at the beginning of the current free block.
 
 ```
    BEFORE                             AFTER
 
    +----+----+----+----+              +----+----+----+----+
-pf |*?? | ?? | cf | ?? |           pf |*?? | ?? | cf | ?? |
+pf |*?? | ?? | cf | ?? |           pf |*?? | ?? |  c | ?? |
    +----+----+----+----+              +----+----+----+----+
             ...                                ...
    +----+----+----+----+              +----+----+----+----+
  p | cf | ?? |   ...   |            p | cf | ?? |   ...   |
    +----+----+----+----+              +----+----+----+----+
    +----+----+----+----+              +----+----+----+----+
-cf |* n |  p | nf | pf |           cf |* c |  p | nf | pf |
+cf |* n |  p | nf | pf |           cf |  c |  p |    |    | New allocated blocks here
    +----+----+----+----+              +----+----+----+----+
-                                      +----+----+----+----+ This is the new
-                                    c |  n | cf |   ..    | block at cf+b
+                                      +----+----+----+----+ 
+                                    c |* n | cf | nf | pf | New free block at cf+blocks
                                       +----+----+----+----+
    +----+----+----+----+              +----+----+----+----+
  n | ?? | cf |   ...   |            n | ?? |  c |   ...   |
    +----+----+----+----+              +----+----+----+----+
             ...                                ...
    +----+----+----+----+              +----+----+----+----+
-nf |*?? | ?? | ?? | cf |           nf | ?? | ?? | ?? | pf |
+nf |*?? | ?? | ?? | cf |           nf | ?? | ?? | ?? |  c |
    +----+----+----+----+              +----+----+----+----+
 ```
 
-This one is prety easy too, except we don't need to mess with the
-free list indexes at all becasue we'll allocate the new block at the
-end of the current free block. We do, however have to adjust the
-indexes in cf, c, and n.
+This one is pretty easy too, as we just split the block at cf into
+two blocks. The first is forn the allocated memory, the second is
+at cf+blocks. Then we clean up the free list indexes.
 
 That covers the initialization and all possible malloc scenarios, so now
 we need to cover the free operation possibilities...
