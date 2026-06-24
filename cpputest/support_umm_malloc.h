@@ -15,6 +15,8 @@
 #define UMM_FIRST_BLOCK_BODY_SIZE (UMM_BLOCK_BODY_SIZE - UMM_BLOCK_HEADER_SIZE)
 
 extern char test_umm_heap[][UMM_BLOCK_BODY_SIZE];
+extern struct umm_heap_config umm_test_heap_config;
+
 extern int umm_max_critical_depth;
 extern int umm_critical_depth;
 
@@ -28,8 +30,8 @@ struct block_test_values {
 };
 
 extern size_t normalize_allocation_size(size_t);
-extern bool check_block(struct block_test_values *);
-extern bool check_blocks(struct block_test_values *, size_t);
+extern bool check_block(umm_heap *h, struct block_test_values *);
+extern bool check_blocks(umm_heap *h, struct block_test_values *, size_t);
 
 extern void srand32(uint32_t);
 extern uint32_t rand32(void);
@@ -43,9 +45,9 @@ extern uint32_t rand32(void);
 
 #define ARRAYELEMENTCOUNT(x) (sizeof (x) / sizeof (x)[0])
 
-#define SUPPORT_UMM_MALLOC_BLOCKS (0x2000)
-#define SUPPORT_UMM_MALLOC_HEAP_SIZE (SUPPORT_UMM_MALLOC_BLOCKS * UMM_BLOCK_BODY_SIZE)
-#define UMM_LASTBLOCK ((SUPPORT_UMM_MALLOC_HEAP_SIZE / UMM_BLOCK_BODY_SIZE) - 1)
+#define SUPPORT_UMM_MALLOC_BLOCKS (umm_test_heap_config.numblocks)
+#define SUPPORT_UMM_MALLOC_HEAP_SIZE (umm_test_heap_config.heap_size)
+#define UMM_LASTBLOCK ((uint16_t)((umm_test_heap_config.numblocks) - 1))
 
 #define TEST_MSG_LEN (132)
 

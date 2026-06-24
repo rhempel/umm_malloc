@@ -36,12 +36,12 @@ TEST(Realloc, testReallocTooBig)
     void *foo = umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE);
 
     POINTERS_EQUAL((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], foo);
-    CHECK_TRUE(check_blocks(ReallocTooBig_test_values, ARRAYELEMENTCOUNT(ReallocTooBig_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocTooBig_test_values, ARRAYELEMENTCOUNT(ReallocTooBig_test_values)));
 
     // Realloc with a request that is too big should return NULL and leave the original memory untouched.
 
     POINTERS_EQUAL((void *)NULL, (umm_realloc(foo,UMM_BLOCK_BODY_SIZE * (SUPPORT_UMM_MALLOC_BLOCKS - 2))));
-    CHECK_TRUE(check_blocks(ReallocTooBig_test_values, ARRAYELEMENTCOUNT(ReallocTooBig_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocTooBig_test_values, ARRAYELEMENTCOUNT(ReallocTooBig_test_values)));
 }
 
 struct block_test_values ReallocSameSize_test_values[] = {
@@ -56,22 +56,22 @@ TEST(Realloc, testReallocSameSize)
     void *foo = umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE / 2);
 
     POINTERS_EQUAL((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], foo);
-    CHECK_TRUE(check_blocks(ReallocSameSize_test_values, ARRAYELEMENTCOUNT(ReallocSameSize_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocSameSize_test_values, ARRAYELEMENTCOUNT(ReallocSameSize_test_values)));
 
     // Realloc with a request that is same size or block size should leave the original memory untouched.
 
     POINTERS_EQUAL((void *)foo, (umm_realloc(foo, UMM_FIRST_BLOCK_BODY_SIZE / 2)));
-    CHECK_TRUE(check_blocks(ReallocSameSize_test_values, ARRAYELEMENTCOUNT(ReallocSameSize_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocSameSize_test_values, ARRAYELEMENTCOUNT(ReallocSameSize_test_values)));
 
     // Realloc with a request that is same size or block size should leave the original memory untouched.
 
     POINTERS_EQUAL((void *)foo, (umm_realloc(foo, 1)));
-    CHECK_TRUE(check_blocks(ReallocSameSize_test_values, ARRAYELEMENTCOUNT(ReallocSameSize_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocSameSize_test_values, ARRAYELEMENTCOUNT(ReallocSameSize_test_values)));
 
     // Realloc with a request that is same size or block size should leave the original memory untouched.
 
     POINTERS_EQUAL((void *)foo, (umm_realloc(foo, UMM_FIRST_BLOCK_BODY_SIZE)));
-    CHECK_TRUE(check_blocks(ReallocSameSize_test_values, ARRAYELEMENTCOUNT(ReallocSameSize_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocSameSize_test_values, ARRAYELEMENTCOUNT(ReallocSameSize_test_values)));
 }
 
 struct block_test_values ReallocFree_test_values[] = {
@@ -89,7 +89,7 @@ TEST(Realloc, testReallocFree)
     // Realloc with a request that is 0 size should free the block
 
     POINTERS_EQUAL((void *)NULL, (umm_realloc(foo, 0)));
-    CHECK_TRUE(check_blocks(ReallocFree_test_values, ARRAYELEMENTCOUNT(ReallocFree_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocFree_test_values, ARRAYELEMENTCOUNT(ReallocFree_test_values)));
 }
 
 struct block_test_values ReallocFreeRealloc_test_values[] = {
@@ -104,7 +104,7 @@ TEST(Realloc, testReallocFreeRealloc)
     void *foo = umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE / 2);
 
     POINTERS_EQUAL((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], foo);
-    CHECK_TRUE(check_blocks(ReallocFreeRealloc_test_values, ARRAYELEMENTCOUNT(ReallocFreeRealloc_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocFreeRealloc_test_values, ARRAYELEMENTCOUNT(ReallocFreeRealloc_test_values)));
 
     // Realloc with a request that is 0 size should free the block
 
@@ -113,7 +113,7 @@ TEST(Realloc, testReallocFreeRealloc)
     // Realloc with a request that is same size or block size should leave the original memory untouched.
 
     POINTERS_EQUAL((void *)foo, (umm_realloc(NULL, UMM_FIRST_BLOCK_BODY_SIZE)));
-    CHECK_TRUE(check_blocks(ReallocSameSize_test_values, ARRAYELEMENTCOUNT(ReallocSameSize_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocSameSize_test_values, ARRAYELEMENTCOUNT(ReallocSameSize_test_values)));
 }
 
 struct block_test_values ReallocAssimilateUpExact[] = {
@@ -142,7 +142,7 @@ TEST(Realloc, testReallocAssimilateUpExact)
     umm_free(mem2);
 
     POINTERS_EQUAL((void *)mem1, (umm_realloc(mem1, UMM_FIRST_BLOCK_BODY_SIZE + 1)));
-    CHECK_TRUE(check_blocks(ReallocAssimilateUpExact, ARRAYELEMENTCOUNT(ReallocAssimilateUpExact)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocAssimilateUpExact, ARRAYELEMENTCOUNT(ReallocAssimilateUpExact)));
 }
 
 struct block_test_values ReallocAssimilateUp[] = {
@@ -175,7 +175,7 @@ TEST(Realloc, testReallocAssimilateUp)
     umm_free(mem3);
 
     POINTERS_EQUAL((void *)mem1, (umm_realloc(mem1, UMM_FIRST_BLOCK_BODY_SIZE + 8)));
-    CHECK_TRUE(check_blocks(ReallocAssimilateUp, ARRAYELEMENTCOUNT(ReallocAssimilateUp)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocAssimilateUp, ARRAYELEMENTCOUNT(ReallocAssimilateUp)));
 }
 
 struct block_test_values ReallocAssimilateDown[] = {
@@ -201,7 +201,7 @@ TEST(Realloc, testReallocAssimilateDown)
     umm_free(mem0);
 
     POINTERS_EQUAL((void *)mem0, (umm_realloc(mem1, UMM_FIRST_BLOCK_BODY_SIZE + 1)));
-    CHECK_TRUE(check_blocks(ReallocAssimilateDown, ARRAYELEMENTCOUNT(ReallocAssimilateDown)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocAssimilateDown, ARRAYELEMENTCOUNT(ReallocAssimilateDown)));
 }
 
 struct block_test_values ReallocAssimilateUpDown[] = {
@@ -230,7 +230,7 @@ TEST(Realloc, testReallocAssimilateUpDown)
     umm_free(mem2);
 
     POINTERS_EQUAL((void *)mem0, (umm_realloc(mem1, UMM_FIRST_BLOCK_BODY_SIZE + UMM_BLOCK_BODY_SIZE * 2)));
-    CHECK_TRUE(check_blocks(ReallocAssimilateUpDown, ARRAYELEMENTCOUNT(ReallocAssimilateUpDown)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocAssimilateUpDown, ARRAYELEMENTCOUNT(ReallocAssimilateUpDown)));
 }
 
 struct block_test_values ReallocAssimilateForceDown[] = {
@@ -261,7 +261,7 @@ TEST(Realloc, testReallocAssimilateForceDown)
     umm_free(mem2);
 
     POINTERS_EQUAL((void *)mem0, (umm_realloc(mem1, UMM_FIRST_BLOCK_BODY_SIZE + UMM_BLOCK_BODY_SIZE)));
-    CHECK_TRUE(check_blocks(ReallocAssimilateForceDown, ARRAYELEMENTCOUNT(ReallocAssimilateForceDown)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocAssimilateForceDown, ARRAYELEMENTCOUNT(ReallocAssimilateForceDown)));
 }
 
 struct block_test_values ReallocNewBlock[] = {
@@ -287,5 +287,5 @@ TEST(Realloc, testReallocNewBlock)
     /* Realloc the middle block - should need a totally new block */
 
     POINTERS_EQUAL((void *)&test_umm_heap[   4][UMM_BLOCK_HEADER_SIZE], (umm_realloc(mem1, UMM_FIRST_BLOCK_BODY_SIZE + UMM_BLOCK_BODY_SIZE)));
-    CHECK_TRUE(check_blocks(ReallocNewBlock, ARRAYELEMENTCOUNT(ReallocNewBlock)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, ReallocNewBlock, ARRAYELEMENTCOUNT(ReallocNewBlock)));
 }

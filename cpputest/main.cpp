@@ -1,5 +1,6 @@
 #include "CppUTest/CommandLineTestRunner.h"
 
+IMPORT_TEST_GROUP (Init);
 IMPORT_TEST_GROUP (FirstMalloc);
 IMPORT_TEST_GROUP (TooBigMalloc);
 IMPORT_TEST_GROUP (Free);

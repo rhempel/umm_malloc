@@ -78,6 +78,8 @@ UMM_H_ATTPACKPRE typedef struct umm_block_t {
 
 #define UMM_FREELIST_MASK ((uint16_t)(0x8000))
 #define UMM_BLOCKNO_MASK  ((uint16_t)(0x7FFF))
+#define UMM_MAXBLOCKS     (UMM_BLOCKNO_MASK)
+#define UMM_MINBLOCKS     (8)
 
 /* ------------------------------------------------------------------------- */
 
@@ -124,9 +126,22 @@ static uint16_t umm_blocks(size_t size) {
      * The calculation of the block size is not too difficult, but there are
      * a few little things that we need to be mindful of.
      *
-     * When a block removed from the free list, the space used by the free
-     * pointers is available for data. That's what the first calculation
+     * When a block is removed from the free list, the space used by the free
+     * block indicies is available for data. That's what the first calculation
      * of size is doing.
+     */
+
+    if (size <= (sizeof(((umm_block *)0)->body))) {
+        return 1;
+    }
+
+    size -= (sizeof(((umm_block *)0)->body));
+
+    /*
+     * If it's for more than that, then we need to figure out the number of
+     * additional whole blocks the size of an umm_block are required, so
+     * reduce the size request by the number of bytes in the body of the
+     * first block.
      *
      * We don't check for the special case of (size == 0) here as this needs
      * special handling in the caller depending on context. For example when we
@@ -141,26 +156,12 @@ static uint16_t umm_blocks(size_t size) {
      * 2. (blocks > (2^15)) This should return ((2^15)) to force a
      *                      failure when the allocator runs
      *
-     * If the requested size is greater that 32677-2 blocks (max block index
+     * If the requested size is greater than 32767-2 blocks (max block index
      * minus the overhead of the top and bottom bookkeeping blocks) then we
      * will return an incorrectly truncated value when the result is cast to
      * a uint16_t.
-     */
-
-    if (size <= (sizeof(((umm_block *)0)->body))) {
-        return 1;
-    }
-
-    /*
-     * If it's for more than that, then we need to figure out the number of
-     * additional whole blocks the size of an umm_block are required, so
-     * reduce the size request by the number of bytes in the body of the
-     * first block.
-     */
-
-    size -= (sizeof(((umm_block *)0)->body));
-
-    /* NOTE WELL that we take advantage of the fact that INT16_MAX is the
+     * 
+     * NOTE WELL that we take advantage of the fact that INT16_MAX is the
      * number of blocks that we can index in 15 bits :-)
      *
      * The below expression looks wierd, but it's right. Assuming body
@@ -278,13 +279,38 @@ static uint16_t umm_assimilate_down(umm_heap *heap, uint16_t c, uint16_t freemas
 /* ------------------------------------------------------------------------- */
 
 void umm_multi_init_heap(umm_heap *heap, void *ptr, size_t size) {
-    /* init heap pointer and size, and memset it to 0 */
-    heap->pheap = ptr;
-    UMM_HEAPSIZE = size;
-    UMM_NUMBLOCKS = (UMM_HEAPSIZE / UMM_BLOCKSIZE);
+    /* Initialize the heap with 0 to simplify the early exit conditions */
+    heap->pheap = (umm_block *)NULL;
+    UMM_HEAPSIZE = 0;
+    UMM_NUMBLOCKS = 0;
+
+    /* Start looking for early exit conditions ...
+     *
+     * 1. Too few blocks (anything less than 8 blocks)
+     * 2. Too many blocks (anything greater than the maximum 15 bit block index)
+     */
+
+    if ((size / UMM_BLOCKSIZE) > UMM_MAXBLOCKS) {
+        DBGLOG_CRITICAL("Heap too large: %u blocks (max %u)\n",
+            (unsigned) (size / UMM_BLOCKSIZE), (unsigned) UMM_MAXBLOCKS);
+        return;
+
+    } else if ((size / UMM_BLOCKSIZE) < UMM_MINBLOCKS) {
+        DBGLOG_CRITICAL("Heap too small: %u blocks (max %u)\n",
+            (unsigned) (size / UMM_BLOCKSIZE), (unsigned) UMM_MINBLOCKS);
+        return;
+
+    } else {
+        /* Initialize the heap structure, making sure that the size is a multiple of the blocksize!  */
+        heap->pheap = (umm_block *)ptr;
+        UMM_HEAPSIZE = (size / UMM_BLOCKSIZE) * UMM_BLOCKSIZE;
+        UMM_NUMBLOCKS = (size / UMM_BLOCKSIZE);
+    }
+
+    /* Now we can proceed with the remnaining initialization steps */
     memset(UMM_HEAP, 0x00, UMM_HEAPSIZE);
 
-    /* setup initial blank heap structure */
+    /* setup initial blank heap metrics structure */
     UMM_FRAGMENTATION_METRIC_INIT();
 
     /* Set up umm_block[0], which just points to umm_block[1] */
@@ -325,7 +351,6 @@ void umm_multi_init_heap(umm_heap *heap, void *ptr, size_t size) {
 
 // DBGLOG_FORCE(true, "nblock(0) %04x pblock(0) %04x nfree(0) %04x pfree(0) %04x\n", UMM_NBLOCK(0) & UMM_BLOCKNO_MASK, UMM_PBLOCK(0), UMM_NFREE(0), UMM_PFREE(0));
 // DBGLOG_FORCE(true, "nblock(1) %04x pblock(1) %04x nfree(1) %04x pfree(1) %04x\n", UMM_NBLOCK(1) & UMM_BLOCKNO_MASK, UMM_PBLOCK(1), UMM_NFREE(1), UMM_PFREE(1));
-
 }
 
 void umm_multi_init(umm_heap *heap) {

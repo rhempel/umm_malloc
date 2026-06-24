@@ -17,6 +17,12 @@ uint32_t UMM_MALLOC_CFG_HEAP_SIZE = SUPPORT_UMM_MALLOC_HEAP_SIZE;
 char test_umm_heap[0x2000][UMM_BLOCK_BODY_SIZE];
 void *UMM_MALLOC_CFG_HEAP_ADDR = &test_umm_heap;
 
+struct umm_heap_config umm_test_heap_config = {
+    .pheap = test_umm_heap,
+    .heap_size = sizeof(test_umm_heap),
+    .numblocks = sizeof(test_umm_heap)/UMM_BLOCK_BODY_SIZE
+};
+
 int umm_max_critical_depth;
 int umm_critical_depth;
 
@@ -40,31 +46,31 @@ bool check_all_bytes(uint8_t *p, size_t s, uint8_t v) {
 // 2 - body.free.next
 // 3 - body.free.prev
 
-bool get_block_is_free(int b) {
-    return (((uint16_t *)(&test_umm_heap[b]))[0] & 0x8000) == 0x8000;
+bool get_block_is_free(umm_heap *h, int b) {
+    return (((uint16_t *)(((char (*)[UMM_BLOCK_BODY_SIZE])(h->pheap))[b]))[0] & 0x8000) == 0x8000;
 }
 
-uint16_t get_block_next(int b) {
-    return ((uint16_t *)(&test_umm_heap[b]))[0] & 0x7FFF;
+uint16_t get_block_next(umm_heap *h, int b) {
+    return (((uint16_t *)(((char (*)[UMM_BLOCK_BODY_SIZE])(h->pheap))[b]))[0] & 0x7FFF);
 }
 
-uint16_t get_block_prev(int b) {
-    return ((uint16_t *)(&test_umm_heap[b]))[1];
+uint16_t get_block_prev(umm_heap *h, int b) {
+    return ((uint16_t *)(((char (*)[UMM_BLOCK_BODY_SIZE])(h->pheap))[b]))[1];
 }
 
-uint16_t get_block_next_free(int b) {
-    return ((uint16_t *)(&test_umm_heap[b]))[2];
+uint16_t get_block_next_free(umm_heap *h, int b) {
+    return ((uint16_t *)(((char (*)[UMM_BLOCK_BODY_SIZE])(h->pheap))[b]))[2];
 }
 
-uint16_t get_block_prev_free(int b) {
-    return ((uint16_t *)(&test_umm_heap[b]))[3];
+uint16_t get_block_prev_free(umm_heap *h, int b) {
+    return ((uint16_t *)(((char (*)[UMM_BLOCK_BODY_SIZE])(h->pheap))[b]))[3];
 }
 
 char block_test_msg[TEST_MSG_LEN];
 char block_actual_msg[TEST_MSG_LEN];
 char test_msg[256];
 
-bool check_block(struct block_test_values *t) {
+bool check_block(umm_heap *h, struct block_test_values *t) {
     snprintf(block_test_msg,   TEST_MSG_LEN, "\nTest__: Block %04d f %d n %04d p %04d nf %04d pf %04d", t->block
         , t->is_free
         , t->next
@@ -72,19 +78,19 @@ bool check_block(struct block_test_values *t) {
         , t->next_free
         , t->prev_free);
     snprintf(block_actual_msg, TEST_MSG_LEN, "\nActual: Block %04d f %d n %04d p %04d nf %04d pf %04d\n", t->block
-        , get_block_is_free(t->block)
-        , get_block_next(t->block)
-        , get_block_prev(t->block)
-        , get_block_next_free(t->block)
-        , get_block_prev_free(t->block));
+        , get_block_is_free(h, t->block)
+        , get_block_next(h, t->block)
+        , get_block_prev(h, t->block)
+        , get_block_next_free(h, t->block)
+        , get_block_prev_free(h, t->block));
     strncpy(test_msg, block_test_msg, 256);
     strncat(test_msg, block_actual_msg, 256);
 
-    CHECK_EQUAL_TEXT(t->is_free,   get_block_is_free(t->block), test_msg);
-    CHECK_EQUAL_TEXT(t->next,      get_block_next(t->block), test_msg);
-    CHECK_EQUAL_TEXT(t->prev,      get_block_prev(t->block), test_msg);
-    CHECK_EQUAL_TEXT(t->next_free, get_block_next_free(t->block), test_msg);
-    CHECK_EQUAL_TEXT(t->prev_free, get_block_prev_free(t->block), test_msg);
+    CHECK_EQUAL_TEXT(t->is_free,   get_block_is_free(h, t->block), test_msg);
+    CHECK_EQUAL_TEXT(t->next,      get_block_next(h, t->block), test_msg);
+    CHECK_EQUAL_TEXT(t->prev,      get_block_prev(h, t->block), test_msg);
+    CHECK_EQUAL_TEXT(t->next_free, get_block_next_free(h, t->block), test_msg);
+    CHECK_EQUAL_TEXT(t->prev_free, get_block_prev_free(h, t->block), test_msg);
 
     return true;
 }
@@ -115,10 +121,10 @@ size_t normalize_allocation_size(size_t s) {
     return first_block * UMM_FIRST_BLOCK_BODY_SIZE + full_blocks * UMM_BLOCK_BODY_SIZE + extra_bytes;
 }
 
-bool check_blocks(struct block_test_values *t, size_t n) {
+bool check_blocks(umm_heap *h,struct block_test_values *t, size_t n) {
     int i;
     for (i = 0; i < n; ++i) {
-        CHECK_TRUE(check_block(&t[i]));
+        CHECK_TRUE(check_block(h, &t[i]));
     }
     return true;
 }

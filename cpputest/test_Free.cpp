@@ -48,7 +48,7 @@ TEST(Free, testFreeNullPtr)
 {
     umm_free((void *)NULL);
 
-    CHECK_TRUE(check_blocks(FreeDoNothing_test_values, ARRAYELEMENTCOUNT(FreeDoNothing_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, FreeDoNothing_test_values, ARRAYELEMENTCOUNT(FreeDoNothing_test_values)));
 
 }
 
@@ -56,14 +56,14 @@ TEST(Free, testFreeLowPtr)
 {
     umm_free((test_umm_heap - 1));
 
-    CHECK_TRUE(check_blocks(FreeDoNothing_test_values, ARRAYELEMENTCOUNT(FreeDoNothing_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, FreeDoNothing_test_values, ARRAYELEMENTCOUNT(FreeDoNothing_test_values)));
 }
 
 TEST(Free, testFreeHighPtr)
 {
     umm_free(test_umm_heap + SUPPORT_UMM_MALLOC_HEAP_SIZE);
 
-    CHECK_TRUE(check_blocks(FreeDoNothing_test_values, ARRAYELEMENTCOUNT(FreeDoNothing_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, FreeDoNothing_test_values, ARRAYELEMENTCOUNT(FreeDoNothing_test_values)));
 }
 
 struct block_test_values FreeFirst_test_values[] = {
@@ -77,7 +77,7 @@ TEST(Free, testFreeFirst)
     umm_init();
     umm_free(umm_malloc(4));
 
-    CHECK_TRUE(check_blocks(FreeFirst_test_values, ARRAYELEMENTCOUNT(FreeFirst_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, FreeFirst_test_values, ARRAYELEMENTCOUNT(FreeFirst_test_values)));
 }
 
 struct block_test_values FreeLast_test_values[] = {
@@ -94,7 +94,7 @@ TEST(Free, testFreeLast)
 {
     umm_free(p[4]);
 
-    CHECK_TRUE(check_blocks(FreeLast_test_values, ARRAYELEMENTCOUNT(FreeLast_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, FreeLast_test_values, ARRAYELEMENTCOUNT(FreeLast_test_values)));
 }
 
 struct block_test_values FreeSecondLast_test_values[] = {
@@ -111,7 +111,7 @@ TEST(Free, testFreeSecondLast)
 {
     umm_free(p[3]);
 
-    CHECK_TRUE(check_blocks(FreeSecondLast_test_values, ARRAYELEMENTCOUNT(FreeSecondLast_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, FreeSecondLast_test_values, ARRAYELEMENTCOUNT(FreeSecondLast_test_values)));
 }
 
 struct block_test_values FreeAssimilateUp_test_values[] = {
@@ -129,7 +129,7 @@ TEST(Free, testFreeAssimilateUp)
     umm_free(p[3]);
     umm_free(p[2]);
 
-    CHECK_TRUE(check_blocks(FreeAssimilateUp_test_values, ARRAYELEMENTCOUNT(FreeAssimilateUp_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, FreeAssimilateUp_test_values, ARRAYELEMENTCOUNT(FreeAssimilateUp_test_values)));
 }
 
 struct block_test_values FreeAssimilateDown_test_values[] = {
@@ -147,7 +147,7 @@ TEST(Free, testFreeAssimilateDown)
     umm_free(p[2]);
     umm_free(p[3]);
 
-    CHECK_TRUE(check_blocks(FreeAssimilateDown_test_values, ARRAYELEMENTCOUNT(FreeAssimilateDown_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, FreeAssimilateDown_test_values, ARRAYELEMENTCOUNT(FreeAssimilateDown_test_values)));
 }
 
 struct block_test_values FreeAssimilateUpDown_test_values[] = {
@@ -165,7 +165,7 @@ TEST(Free, testFreeAssimilateUpDown)
     umm_free(p[1]);
     umm_free(p[2]);
 
-    CHECK_TRUE(check_blocks(FreeAssimilateUpDown_test_values, ARRAYELEMENTCOUNT(FreeAssimilateUpDown_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, FreeAssimilateUpDown_test_values, ARRAYELEMENTCOUNT(FreeAssimilateUpDown_test_values)));
 }
 
 struct block_test_values FreeAssimilateDownUp_test_values[] = {
@@ -183,7 +183,7 @@ TEST(Free, testFreeAssimilateDownUp)
     umm_free(p[1]);
     umm_free(p[3]);
 
-    CHECK_TRUE(check_blocks(FreeAssimilateDownUp_test_values, ARRAYELEMENTCOUNT(FreeAssimilateDownUp_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, FreeAssimilateDownUp_test_values, ARRAYELEMENTCOUNT(FreeAssimilateDownUp_test_values)));
 }
 
 struct block_test_values FreeAssimilateFirst_test_values[] = {
@@ -201,7 +201,7 @@ TEST(Free, testFreeAssimilateFirst)
     umm_free(p[1]);
     umm_free(p[0]);
 
-    CHECK_TRUE(check_blocks(FreeAssimilateFirst_test_values, ARRAYELEMENTCOUNT(FreeAssimilateFirst_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, FreeAssimilateFirst_test_values, ARRAYELEMENTCOUNT(FreeAssimilateFirst_test_values)));
 }
 
 struct block_test_values FreeAssimilateLast_test_values[] = {
@@ -218,7 +218,7 @@ TEST(Free, testFreeAssimilateLast)
     umm_free(p[3]);
     umm_free(p[4]);
 
-    CHECK_TRUE(check_blocks(FreeAssimilateLast_test_values, ARRAYELEMENTCOUNT(FreeAssimilateLast_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, FreeAssimilateLast_test_values, ARRAYELEMENTCOUNT(FreeAssimilateLast_test_values)));
 }
 
 
@@ -238,7 +238,7 @@ TEST(Free, testFreeHiLo)
     umm_free(p[3]);
     umm_free(p[1]);
 
-    CHECK_TRUE(check_blocks(FreeHiLo_test_values, ARRAYELEMENTCOUNT(FreeHiLo_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, FreeHiLo_test_values, ARRAYELEMENTCOUNT(FreeHiLo_test_values)));
 }
 
 struct block_test_values FreeLoHi_test_values[] = {
@@ -256,5 +256,5 @@ TEST(Free, testFreeLoHi) {
     umm_free(p[1]);
     umm_free(p[3]);
 
-    CHECK_TRUE(check_blocks(FreeLoHi_test_values, ARRAYELEMENTCOUNT(FreeLoHi_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, FreeLoHi_test_values, ARRAYELEMENTCOUNT(FreeLoHi_test_values)));
 }

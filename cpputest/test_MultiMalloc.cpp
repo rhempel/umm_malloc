@@ -32,7 +32,7 @@ IGNORE_TEST(MultiMalloc,testMultMallocWithMultipleHeaps)
 }
 
 struct block_test_values MultiMallocManySmall_test_values[] = {
- {0, false, 1, 0,  6,  6}
+  {0, false, 1, 0,  6,  6}
 , {1, false, 2, 0,  0,  0}
 , {2, false, 3, 1,  0,  0}
 , {3, false, 4, 2,  0,  0}
@@ -50,7 +50,7 @@ TEST(MultiMalloc, testMultiMallocManySmall)
     POINTERS_EQUAL((void *)&test_umm_heap[4][UMM_BLOCK_HEADER_SIZE], umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE));
     POINTERS_EQUAL((void *)&test_umm_heap[5][UMM_BLOCK_HEADER_SIZE], umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE));
 
-    CHECK_TRUE(check_blocks(MultiMallocManySmall_test_values, ARRAYELEMENTCOUNT(MultiMallocManySmall_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, MultiMallocManySmall_test_values, ARRAYELEMENTCOUNT(MultiMallocManySmall_test_values)));
 }
 
 struct block_test_values MultiMallocManyMed_test_values[] = {
@@ -72,7 +72,7 @@ TEST(MultiMalloc, testMultiMallocManyMed)
     POINTERS_EQUAL((void *)&test_umm_heap[1501][UMM_BLOCK_HEADER_SIZE], umm_malloc(UMM_BLOCK_BODY_SIZE * 500 - UMM_FIRST_BLOCK_BODY_SIZE));
     POINTERS_EQUAL((void *)&test_umm_heap[2001][UMM_BLOCK_HEADER_SIZE], umm_malloc(UMM_BLOCK_BODY_SIZE * 500 - UMM_FIRST_BLOCK_BODY_SIZE));
 
-    CHECK_TRUE(check_blocks(MultiMallocManyMed_test_values, ARRAYELEMENTCOUNT(MultiMallocManyMed_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, MultiMallocManyMed_test_values, ARRAYELEMENTCOUNT(MultiMallocManyMed_test_values)));
 }
 
 struct block_test_values MultiMallocManyLarge_test_values[] = {
@@ -91,5 +91,5 @@ TEST(MultiMalloc, testMultiMallocManyLarge)
     POINTERS_EQUAL((void *)&test_umm_heap[5001][UMM_BLOCK_HEADER_SIZE], umm_malloc(UMM_BLOCK_BODY_SIZE * 2500 - UMM_FIRST_BLOCK_BODY_SIZE));
     POINTERS_EQUAL((void *)NULL, umm_malloc(UMM_BLOCK_BODY_SIZE * 2500 - UMM_FIRST_BLOCK_BODY_SIZE));
 
-    CHECK_TRUE(check_blocks(MultiMallocManyLarge_test_values, ARRAYELEMENTCOUNT(MultiMallocManyLarge_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, MultiMallocManyLarge_test_values, ARRAYELEMENTCOUNT(MultiMallocManyLarge_test_values)));
 }

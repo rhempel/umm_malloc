@@ -84,7 +84,9 @@ Much like standard initialization, there are two methods:
 
 ## Automated Testing
 
-`umm_malloc` is designed to be testable in standalone
+`umm_malloc` is designed to be testable in standalone mode using `CppUTest`.
+
+To run the test suite, 
 mode using `ceedling`. To run the test suite, just make sure you have
 `ceedling` installed and then run:
 

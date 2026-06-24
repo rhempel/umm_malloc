@@ -34,6 +34,7 @@ SRC_TEST :=
 
 SRC_C += src/umm_malloc.c
 
+SRC_TEST += cpputest/test_Init.c
 SRC_TEST += cpputest/test_FirstMalloc.c
 SRC_TEST += cpputest/test_TooBigMalloc.c
 SRC_TEST += cpputest/test_Free.c

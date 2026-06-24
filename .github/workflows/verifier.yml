@@ -40,7 +40,7 @@ jobs:
 
       - name: Run the unit tests
         run: |
-          make -f ${HOME}/work/umm_malloc/adaptabuild.mak MCU=host PRODUCT=unittest unittest
+          make -f ${HOME}/work/umm_malloc/adaptabuild_config.mak MCU=host PRODUCT=default unittest
           ls -al ${HOME}/work/umm_malloc/artifacts
           find ${HOME}/work/umm_malloc/artifacts
 
@@ -48,29 +48,4 @@ jobs:
         uses: actions/upload-artifact@main
         with:
           name: Test and Coverage Results
-          path: ~/work/umm_malloc/artifacts/unittest/host/umm_malloc
-
-
-#          ls -al unittest
-#          ls -al unittest/artifacts/unittest/host/umm_malloc/
-#          ls -al ~
-#          ls -al ${PWD}/unittest/artifacts/unittest/host/umm_malloc
-#          echo ${PWD}
-#          echo ${HOME}
-#          find ${HOME} -type d
-
-#      - name: Archive test and coverage results
-#        uses: actions/upload-artifact@main
-#        with:
-#          name: Test and Coverage Results
-#          path: ${HOME}/work/unittest/artifacts/unittest/host/umm_malloc
-
-#          cd unittest     && cp src/umm_malloc/adaptabuild/* .
-#          cd unittest     && make -f adaptabuild.mak MCU=host PRODUCT=unittest unittest
-#          ls -al unittest
-
-#      - name: Link unittest source up one level
-#        run: sudo apt install --no-install-recommends -y cpputest
-
-#      - name: Run multi-configuration tests
-#        run: ./multitest.sh
+          path: ~/work/umm_malloc/artifacts/default/host/umm_malloc

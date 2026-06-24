@@ -24,23 +24,17 @@ TEST_GROUP(FirstMalloc)
     }
 };
 
-struct block_test_values Initialization_test_values[] =
+static struct block_test_values Initialization_test_values[] =
 {
   {0, false, 1, 0, 1, 1}
 , {1, true,  UMM_LASTBLOCK, 0, 0, 0}
 , {UMM_LASTBLOCK, false, 0, 1, 0, 0}
 };
 
-TEST(FirstMalloc, testHeapInitialization)
-{
-// DBGLOG_FORCE(true, "support heapsize %08x\n", SUPPORT_UMM_MALLOC_HEAP_SIZE);
-   CHECK_TRUE(check_blocks(Initialization_test_values, ARRAYELEMENTCOUNT(Initialization_test_values)));
-}
-
 TEST(FirstMalloc, testHeapFirstMalloc0Bytes)
 {
     POINTERS_EQUAL((void *)NULL, (umm_malloc(0)));
-    CHECK_TRUE(check_blocks(Initialization_test_values, ARRAYELEMENTCOUNT(Initialization_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, Initialization_test_values, ARRAYELEMENTCOUNT(Initialization_test_values)));
 }
 
 struct block_test_values MallocFirstBlock_test_values[] =
@@ -53,25 +47,25 @@ struct block_test_values MallocFirstBlock_test_values[] =
 TEST(FirstMalloc, testHeapFirstMalloc1Bytes)
 {
     POINTERS_EQUAL((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc(1)));
-    CHECK_TRUE(check_blocks(MallocFirstBlock_test_values, ARRAYELEMENTCOUNT(MallocFirstBlock_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, MallocFirstBlock_test_values, ARRAYELEMENTCOUNT(MallocFirstBlock_test_values)));
 }
 
 TEST(FirstMalloc, testHeapFirstMalloc2Bytes)
 {
     POINTERS_EQUAL((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc(2)));
-    CHECK_TRUE(check_blocks(MallocFirstBlock_test_values, ARRAYELEMENTCOUNT(MallocFirstBlock_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, MallocFirstBlock_test_values, ARRAYELEMENTCOUNT(MallocFirstBlock_test_values)));
 }
 
 TEST(FirstMalloc, testHeapMallocFirstBlockBodyMinusOneBytes)
 {
     POINTERS_EQUAL((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE - 1)));
-    CHECK_TRUE(check_blocks(MallocFirstBlock_test_values, ARRAYELEMENTCOUNT(MallocFirstBlock_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, MallocFirstBlock_test_values, ARRAYELEMENTCOUNT(MallocFirstBlock_test_values)));
 }
 
 TEST(FirstMalloc, testHeapMallocFirstBlockBodyBytes)
 {
     POINTERS_EQUAL((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE)));
-    CHECK_TRUE(check_blocks(MallocFirstBlock_test_values, ARRAYELEMENTCOUNT(MallocFirstBlock_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, MallocFirstBlock_test_values, ARRAYELEMENTCOUNT(MallocFirstBlock_test_values)));
 }
 
 struct block_test_values MallocSecondBlock_test_values[] =
@@ -84,13 +78,13 @@ struct block_test_values MallocSecondBlock_test_values[] =
 TEST(FirstMalloc, testHeapMallocFirstBlockBodyPlusOneBytes)
 {
     POINTERS_EQUAL((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE + 1)));
-    CHECK_TRUE(check_blocks(MallocSecondBlock_test_values, ARRAYELEMENTCOUNT(MallocSecondBlock_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, MallocSecondBlock_test_values, ARRAYELEMENTCOUNT(MallocSecondBlock_test_values)));
 }
 
 TEST(FirstMalloc, testHeapMallocFirstBlockBodyPlusFullBlockBytes)
 {
     POINTERS_EQUAL((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE + UMM_BLOCK_BODY_SIZE)));
-    CHECK_TRUE(check_blocks(MallocSecondBlock_test_values, ARRAYELEMENTCOUNT(MallocSecondBlock_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, MallocSecondBlock_test_values, ARRAYELEMENTCOUNT(MallocSecondBlock_test_values)));
 }
 
 struct block_test_values MallocThirdBlock_test_values[] =
@@ -103,7 +97,7 @@ struct block_test_values MallocThirdBlock_test_values[] =
 TEST(FirstMalloc, testHeapMallocFirstAndSecondBlockBodyPlusOneBytes)
 {
     POINTERS_EQUAL((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE + UMM_BLOCK_BODY_SIZE + 1)));
-    CHECK_TRUE(check_blocks(MallocThirdBlock_test_values, ARRAYELEMENTCOUNT(MallocThirdBlock_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, MallocThirdBlock_test_values, ARRAYELEMENTCOUNT(MallocThirdBlock_test_values)));
 }
 
 struct block_test_values MallocFirstBlockBodyPlus500Blocks_test_values[] =
@@ -119,7 +113,7 @@ TEST(FirstMalloc, testHeapMallocFirstBlockBodyPlus500Blocks)
     // block contains the prev/next pointer pair.
     //
     POINTERS_EQUAL((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE + UMM_BLOCK_BODY_SIZE * 500)));
-    CHECK_TRUE(check_blocks(MallocFirstBlockBodyPlus500Blocks_test_values, ARRAYELEMENTCOUNT(MallocFirstBlockBodyPlus500Blocks_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, MallocFirstBlockBodyPlus500Blocks_test_values, ARRAYELEMENTCOUNT(MallocFirstBlockBodyPlus500Blocks_test_values)));
 }
 
 struct block_test_values MallocAllBlocks_test_values[] =
@@ -131,7 +125,7 @@ struct block_test_values MallocAllBlocks_test_values[] =
 TEST(FirstMalloc, testHeapAllBlocks)
 {
     POINTERS_EQUAL((void *)&test_umm_heap[1][UMM_BLOCK_HEADER_SIZE], (umm_malloc(UMM_FIRST_BLOCK_BODY_SIZE + UMM_BLOCK_BODY_SIZE * (SUPPORT_UMM_MALLOC_BLOCKS - 3))));
-    CHECK_TRUE(check_blocks(MallocAllBlocks_test_values, ARRAYELEMENTCOUNT(MallocAllBlocks_test_values)));
+    CHECK_TRUE(check_blocks(&umm_test_heap_config, MallocAllBlocks_test_values, ARRAYELEMENTCOUNT(MallocAllBlocks_test_values)));
 }
 
 TEST(FirstMalloc, testHeapAllBlocksPlusOneByte)
