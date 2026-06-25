@@ -368,20 +368,25 @@ static void umm_free_core(umm_heap *heap, void *ptr) {
 
     uint16_t c;
 
-    /*
-     * FIXME: At some point it might be a good idea to add a check to make sure
-     *        that the pointer we're being asked to free up is actually within
-     *        the umm_heap!
-     *
-     * NOTE:  See the new umm_info() function that you can use to see if a ptr is
-     *        on the free list!
-     */
-
     /* Figure out which block we're in. Note the use of truncated division... */
 
     c = (((uint8_t *)ptr) - (uint8_t *)(&(UMM_HEAP[0]))) / UMM_BLOCKSIZE;
 
     DBGLOG_DEBUG("Freeing block %6i\n", c);
+
+    /*
+     * Double-free / invalid-free protection: free mask must be set and pointer
+     * must align to to a block
+     */
+
+    void *expected = (void *)&UMM_DATA(c);
+
+    if ((UMM_NBLOCK(c) & UMM_FREELIST_MASK) || (ptr != expected))
+    {
+        DBGLOG_WARNING("Invalid free detected at block %u (ptr=%p)\n", c, ptr);
+
+        return;
+    }
 
     /* Now let's assimilate this block with the next one if possible. */
 
@@ -431,7 +436,7 @@ void umm_multi_free(umm_heap *heap, void *ptr) {
     /* TODO: remove the check for NULL pointer later */
 
     if ((ptr < heap->pheap) || ((size_t)ptr >= (size_t)heap->pheap + heap->heap_size)) {
-        DBGLOG_DEBUG("free an out of range pointer -> do nothing\n");
+        DBGLOG_WARNING("free an out of range pointer -> do nothing\n");
 
         return;
     }
